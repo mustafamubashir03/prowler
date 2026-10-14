@@ -1,0 +1,237 @@
+$ next dev
+▲ Next.js 16.4.0 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.102:3000
+- Environments: .env
+✓ Ready in 1342ms
+✓ Running next.config.ts took 84ms
+- Cache Components enabled
+- Partial Prefetching enabled
+- Experiments (use with caution):
+  ✓ agentFeedback
+
+ GET / 200 in 2.1s (next.js: 936ms, application-code: 1123ms)
+[browser] Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async="" or moving it into the root <head> tag. 
+[browser] In HTML, <script> cannot be a child of <html>.
+This will cause a hydration error.
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="layout.tsx">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+>                       <html
+>                         lang="en"
+>                         suppressHydrationWarning={true}
+>                         className="h-full antialiased geist_a71539c9-module__T19VSG__variable geist_mono_8d43a2aa-mo..."
+>                       >
+                          ...
+                            <V attribute="class" defaultTheme="system" enableSystem={true} ...>
+>                             <script
+>                               suppressHydrationWarning={true}
+>                               nonce=""
+>                               dangerouslySetInnerHTML={{__html:"((e, i, s,..."}}
+>                             >
+                              ...
+                  ...
+ 
+[browser] <html> cannot contain a nested <script>.
+See this log for the ancestor stack trace. 
+○ Compiling /api/auth/[...all] ...
+(node:25200) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+
+To prepare for this change:
+- If you want the current behavior, explicitly use 'sslmode=verify-full'
+- If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+
+See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:30280) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+
+To prepare for this change:
+- If you want the current behavior, explicitly use 'sslmode=verify-full'
+- If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+
+See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ GET /api/auth/get-session 200 in 9.5s (next.js: 3.6s, application-code: 6.0s)
+ POST /api/auth/sign-in/social 200 in 612ms (next.js: 44ms, application-code: 568ms)
+ GET /sign-in 200 in 4.6s (next.js: 508ms, application-code: 4.1s)
+[browser] Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async="" or moving it into the root <head> tag. 
+[browser] In HTML, <script> cannot be a child of <html>.
+This will cause a hydration error.
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/sign-in" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="layout.tsx">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+>                       <html
+>                         lang="en"
+>                         suppressHydrationWarning={true}
+>                         className="h-full antialiased geist_a71539c9-module__T19VSG__variable geist_mono_8d43a2aa-mo..."
+>                       >
+                          ...
+                            <V attribute="class" defaultTheme="system" enableSystem={true} ...>
+>                             <script
+>                               suppressHydrationWarning={true}
+>                               nonce=""
+>                               dangerouslySetInnerHTML={{__html:"((e, i, s,..."}}
+>                             >
+                              ...
+                  ...
+ 
+[browser] <html> cannot contain a nested <script>.
+See this log for the ancestor stack trace. 
+(node:11620) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+
+To prepare for this change:
+- If you want the current behavior, explicitly use 'sslmode=verify-full'
+- If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+
+See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:25200) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+
+To prepare for this change:
+- If you want the current behavior, explicitly use 'sslmode=verify-full'
+- If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+
+See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ POST /sign-in 200 in 545ms (next.js: 8ms, application-code: 537ms)
+  └─ ƒ signInWithGithub() in 495ms features/auth/actions/index.ts
+(node:27772) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+
+To prepare for this change:
+- If you want the current behavior, explicitly use 'sslmode=verify-full'
+- If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+
+See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ POST /api/auth/sign-in/social 200 in 2.4s (next.js: 10ms, application-code: 2.4s)
+ GET /api/auth/callback/github?code=594a207542175b1b4de6&iss=https%3A%2F%2Fgithub.com%2Flogin%2Foauth&state=fl5PDCY_Zrki3SiB0SofTZSWzyEH6_nw 302 in 5.6s (next.js: 36ms, application-code: 5.6s)
+ GET / 200 in 322ms (next.js: 5ms, application-code: 317ms)
+[browser] Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async="" or moving it into the root <head> tag. 
+[browser] In HTML, <script> cannot be a child of <html>.
+This will cause a hydration error.
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="layout.tsx">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+>                       <html
+>                         lang="en"
+>                         suppressHydrationWarning={true}
+>                         className="h-full antialiased geist_a71539c9-module__T19VSG__variable geist_mono_8d43a2aa-mo..."
+>                       >
+                          ...
+                            <V attribute="class" defaultTheme="system" enableSystem={true} ...>
+>                             <script
+>                               suppressHydrationWarning={true}
+>                               nonce=""
+>                               dangerouslySetInnerHTML={{__html:"((e, i, s,..."}}
+>                             >
+                              ...
+                  ...
+ 
+[browser] <html> cannot contain a nested <script>.
+See this log for the ancestor stack trace. 
+2026-10-14T19:26:22.148Z ERROR [Better Auth]: Failed to parse state [Error [BetterAuthError]: State mismatch: verification not found] {
+  code: 'state_mismatch',
+  details: { state: 'dummy' },
+  errorURL: undefined
+}
+ GET /api/auth/callback/github?code=dummy&state=dummy 302 in 912ms (next.js: 37ms, application-code: 875ms)
+(node:27540) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+
+To prepare for this change:
+- If you want the current behavior, explicitly use 'sslmode=verify-full'
+- If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+
+See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ GET /sign-in 307 in 3.7s (next.js: 6ms, application-code: 3.7s)
+ GET / 200 in 266ms (next.js: 5ms, application-code: 261ms)
+[browser] Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async="" or moving it into the root <head> tag. 
+[browser] In HTML, <script> cannot be a child of <html>.
+This will cause a hydration error.
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="layout.tsx">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+>                       <html
+>                         lang="en"
+>                         suppressHydrationWarning={true}
+>                         className="h-full antialiased geist_a71539c9-module__T19VSG__variable geist_mono_8d43a2aa-mo..."
+>                       >
+                          ...
+                            <V attribute="class" defaultTheme="system" enableSystem={true} ...>
+>                             <script
+>                               suppressHydrationWarning={true}
+>                               nonce=""
+>                               dangerouslySetInnerHTML={{__html:"((e, i, s,..."}}
+>                             >
+                              ...
+                  ...
+ 
+[browser] <html> cannot contain a nested <script>.
+See this log for the ancestor stack trace. 
+ GET /sign-in 200 in 218ms (next.js: 4ms, application-code: 214ms)

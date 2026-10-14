@@ -1,0 +1,77 @@
+// use prisma-8
+model User {
+  id        Int                        @id @default(autoincrement())
+  email     String                     @unique
+  username  String?
+  name      String?
+  createdAt TimestamptzString          @default(now())
+  updatedAt temporal.updatedAtString()
+}
+
+// Better Auth core schema. Better Auth has no Prisma ORM 8 adapter (Prisma 8 has
+// no PrismaClient), so it reads and writes these tables itself through its
+// built-in Kysely/PostgreSQL adapter. Declaring them here keeps them visible in
+// the contract and type-checked, while `schemaName: "auth"` in lib/auth.ts
+// points Better Auth at the same namespace.
+namespace auth {
+  model AuthUser {
+    id            String            @id
+    name          String
+    email         String            @unique
+    emailVerified Boolean
+    image         String?
+    createdAt     TimestamptzString @default(now())
+    updatedAt     TimestamptzString @default(now())
+    sessions      AuthSession[]
+    accounts      AuthAccount[]
+
+    @@map("user")
+  }
+
+  model AuthSession {
+    id        String            @id
+    expiresAt TimestamptzString
+    token     String            @unique
+    createdAt TimestamptzString @default(now())
+    updatedAt TimestamptzString
+    ipAddress String?
+    userAgent String?
+    userId    String
+    user      AuthUser          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId], map: "session_userId_idx")
+    @@map("session")
+  }
+
+  model AuthAccount {
+    id                    String             @id
+    accountId             String
+    providerId            String
+    userId                String
+    accessToken           String?
+    refreshToken          String?
+    idToken               String?
+    accessTokenExpiresAt  TimestamptzString?
+    refreshTokenExpiresAt TimestamptzString?
+    scope                 String?
+    password              String?
+    createdAt             TimestamptzString  @default(now())
+    updatedAt             TimestamptzString
+    user                  AuthUser           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId], map: "account_userId_idx")
+    @@map("account")
+  }
+
+  model AuthVerification {
+    id         String            @id
+    identifier String
+    value      String
+    expiresAt  TimestamptzString
+    createdAt  TimestamptzString @default(now())
+    updatedAt  TimestamptzString @default(now())
+
+    @@index([identifier], map: "verification_identifier_idx")
+    @@map("verification")
+  }
+}
