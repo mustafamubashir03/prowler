@@ -42,3 +42,16 @@ next-env.d.ts
 node_modules/
 dist/
 .env
+
+# local dev server logs
+*.log
+.dev*.log
+
+# Prisma agent skills (regenerate with: pnpm prisma skills sync)
+.agents/
+.claude/
+.cursor/
+.devin/
+
+# Prisma CLI local state
+.prisma/
