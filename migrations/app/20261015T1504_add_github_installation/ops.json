@@ -1,0 +1,410 @@
+[
+  {
+    "id": "table.GithubInstallation",
+    "label": "Create table \"GithubInstallation\"",
+    "summary": "Creates table \"GithubInstallation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "GithubInstallation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"GithubInstallation\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GithubInstallation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"GithubInstallation\"",
+        "sql": "CREATE TABLE \"public\".\"GithubInstallation\" (\n  \"accountLogin\" text NOT NULL,\n  \"accountType\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"installationId\" int4 NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"userId\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"GithubInstallation\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GithubInstallation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.Repository",
+    "label": "Create table \"Repository\"",
+    "summary": "Creates table \"Repository\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Repository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Repository\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Repository\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Repository\"",
+        "sql": "CREATE TABLE \"public\".\"Repository\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"defaultBranch\" text,\n  \"description\" text,\n  \"fileCount\" int4 DEFAULT 0 NOT NULL,\n  \"fullName\" text NOT NULL,\n  \"githubId\" text NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"indexStatus\" text DEFAULT 'idle' NOT NULL,\n  \"indexedAt\" date NOT NULL,\n  \"installationId\" int4 NOT NULL,\n  \"name\" text NOT NULL,\n  \"owner\" text NOT NULL,\n  \"pineconeNamespace\" text NOT NULL,\n  \"private\" bool DEFAULT false NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Repository\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Repository\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.GithubInstallation.GithubInstallation_installationId_key",
+    "label": "Add unique constraint on \"GithubInstallation\" (installationId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "GithubInstallation_installationId_key",
+        "table": "GithubInstallation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"GithubInstallation_installationId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GithubInstallation_installationId_key",
+          "public",
+          "\"public\".\"GithubInstallation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"GithubInstallation_installationId_key\"",
+        "sql": "ALTER TABLE \"public\".\"GithubInstallation\" ADD CONSTRAINT \"GithubInstallation_installationId_key\" UNIQUE (\"installationId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"GithubInstallation_installationId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GithubInstallation_installationId_key",
+          "public",
+          "\"public\".\"GithubInstallation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Repository.Repository_githubId_key",
+    "label": "Add unique constraint on \"Repository\" (githubId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Repository_githubId_key",
+        "table": "Repository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Repository_githubId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Repository_githubId_key",
+          "public",
+          "\"public\".\"Repository\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Repository_githubId_key\"",
+        "sql": "ALTER TABLE \"public\".\"Repository\" ADD CONSTRAINT \"Repository_githubId_key\" UNIQUE (\"githubId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Repository_githubId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Repository_githubId_key",
+          "public",
+          "\"public\".\"Repository\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Repository.Repository_fullName_key",
+    "label": "Add unique constraint on \"Repository\" (fullName)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Repository_fullName_key",
+        "table": "Repository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Repository_fullName_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Repository_fullName_key",
+          "public",
+          "\"public\".\"Repository\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Repository_fullName_key\"",
+        "sql": "ALTER TABLE \"public\".\"Repository\" ADD CONSTRAINT \"Repository_fullName_key\" UNIQUE (\"fullName\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Repository_fullName_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Repository_fullName_key",
+          "public",
+          "\"public\".\"Repository\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Repository.Repository_pineconeNamespace_key",
+    "label": "Add unique constraint on \"Repository\" (pineconeNamespace)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Repository_pineconeNamespace_key",
+        "table": "Repository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Repository_pineconeNamespace_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Repository_pineconeNamespace_key",
+          "public",
+          "\"public\".\"Repository\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Repository_pineconeNamespace_key\"",
+        "sql": "ALTER TABLE \"public\".\"Repository\" ADD CONSTRAINT \"Repository_pineconeNamespace_key\" UNIQUE (\"pineconeNamespace\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Repository_pineconeNamespace_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Repository_pineconeNamespace_key",
+          "public",
+          "\"public\".\"Repository\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.GithubInstallation.GithubInstallation_userId_idx_a489d58a",
+    "label": "Create index \"GithubInstallation_userId_idx_a489d58a\" on \"GithubInstallation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "GithubInstallation_userId_idx_a489d58a",
+        "table": "GithubInstallation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"GithubInstallation_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GithubInstallation_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"GithubInstallation_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"GithubInstallation_userId_idx_a489d58a\" ON \"public\".\"GithubInstallation\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"GithubInstallation_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GithubInstallation_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Repository.Repository_installationId_idx_17db6dbe",
+    "label": "Create index \"Repository_installationId_idx_17db6dbe\" on \"Repository\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Repository_installationId_idx_17db6dbe",
+        "table": "Repository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Repository_installationId_idx_17db6dbe\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Repository_installationId_idx_17db6dbe\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Repository_installationId_idx_17db6dbe\"",
+        "sql": "CREATE INDEX \"Repository_installationId_idx_17db6dbe\" ON \"public\".\"Repository\" (\"installationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Repository_installationId_idx_17db6dbe\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Repository_installationId_idx_17db6dbe\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.GithubInstallation.GithubInstallation_userId_fkey",
+    "label": "Add foreign key \"GithubInstallation_userId_fkey\" on \"GithubInstallation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "GithubInstallation_userId_fkey",
+        "table": "GithubInstallation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"GithubInstallation_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GithubInstallation_userId_fkey",
+          "public",
+          "\"public\".\"GithubInstallation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"GithubInstallation_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"GithubInstallation\"\nADD CONSTRAINT \"GithubInstallation_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"auth\".\"user\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"GithubInstallation_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GithubInstallation_userId_fkey",
+          "public",
+          "\"public\".\"GithubInstallation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Repository.Repository_installationId_fkey",
+    "label": "Add foreign key \"Repository_installationId_fkey\" on \"Repository\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Repository_installationId_fkey",
+        "table": "Repository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Repository_installationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Repository_installationId_fkey",
+          "public",
+          "\"public\".\"Repository\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Repository_installationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Repository\"\nADD CONSTRAINT \"Repository_installationId_fkey\"\nFOREIGN KEY (\"installationId\")\nREFERENCES \"public\".\"GithubInstallation\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Repository_installationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Repository_installationId_fkey",
+          "public",
+          "\"public\".\"Repository\""
+        ]
+      }
+    ]
+  }
+]

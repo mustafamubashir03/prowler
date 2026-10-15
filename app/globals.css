@@ -7,9 +7,11 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  /* Theme type system: Noto Sans for UI and body, Manrope for display,
+     Geist Mono for labels, metadata and numbers. */
   --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-heading);
+  --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -25,9 +27,11 @@
   --color-chart-1: var(--chart-1);
   --color-ring: var(--ring);
   --color-input: var(--input);
+  --color-control: var(--control);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
+  --color-accent-ink: var(--accent-ink);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
   --color-muted: var(--muted);
@@ -49,85 +53,379 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  /* Light theme. Present for parity; dark is the intended default. */
+  --background: oklch(0.995 0 0);
+  --foreground: oklch(0.16 0 0);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.16 0 0);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.16 0 0);
   --primary: oklch(0.496 0.265 301.924);
   --primary-foreground: oklch(0.977 0.014 308.299);
   --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.965 0 0);
+  --muted-foreground: oklch(0.52 0 0);
+  --accent: oklch(0.965 0.001 286.375);
+  --accent-foreground: oklch(0.24 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
+  --border: oklch(0 0 0 / 16%);
+  --control: oklch(0.66 0 0);
+  /* Accent as *text*. The theme's --primary is a fill colour: on dark it
+     resolves to a deep violet that fails contrast as small text. */
+  --accent-ink: oklch(0.45 0.21 302);
+  --input: oklch(0 0 0 / 14%);
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.833 0.145 321.434);
   --chart-2: oklch(0.667 0.295 322.15);
   --chart-3: oklch(0.591 0.293 322.896);
   --chart-4: oklch(0.518 0.253 323.949);
   --chart-5: oklch(0.452 0.211 324.591);
-  --radius: 0.625rem;
+  --radius: 0;
+  /* Shared motion curve so every transition reads the same. */
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
   --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-foreground: oklch(0.16 0 0);
   --sidebar-primary: oklch(0.558 0.288 302.321);
   --sidebar-primary-foreground: oklch(0.977 0.014 308.299);
   --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-accent-foreground: oklch(0.24 0 0);
+  --sidebar-border: oklch(0 0 0 / 16%);
   --sidebar-ring: oklch(0.708 0 0);
 }
 
 .dark {
+  /* Near-black substrate. Elevation is one tone step, never a shadow. */
   --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
+  --foreground: oklch(0.96 0 0);
+  --card: oklch(0.175 0 0);
+  --card-foreground: oklch(0.96 0 0);
+  --popover: oklch(0.175 0 0);
+  --popover-foreground: oklch(0.96 0 0);
+  /* One restrained accent: a green close to GitHub's, used for primary
+     actions and the "indexed" state. Never used as a glow. */
   --primary: oklch(0.438 0.218 303.724);
   --primary-foreground: oklch(0.977 0.014 308.299);
   --secondary: oklch(0.274 0.006 286.033);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
+  --muted: oklch(0.22 0 0);
+  --muted-foreground: oklch(0.68 0 0);
   --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --accent-foreground: oklch(0.96 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
+  /* Hairlines, not boxes. */
+  --border: oklch(1 0 0 / 11%);
+  /* Interactive controls need a boundary you can actually see, so they use a
+     stronger hairline than decorative frames (WCAG 1.4.11). */
+  --control: oklch(1 0 0 / 40%);
+  --accent-ink: oklch(0.74 0.13 302);
+  --input: oklch(0.708 0 0 / 45%);
   --ring: oklch(0.556 0 0);
   --chart-1: oklch(0.833 0.145 321.434);
   --chart-2: oklch(0.667 0.295 322.15);
   --chart-3: oklch(0.591 0.293 322.896);
   --chart-4: oklch(0.518 0.253 323.949);
   --chart-5: oklch(0.452 0.211 324.591);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar: oklch(0.165 0 0);
+  --sidebar-foreground: oklch(0.96 0 0);
   --sidebar-primary: oklch(0.627 0.265 303.9);
   --sidebar-primary-foreground: oklch(0.977 0.014 308.299);
   --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-accent-foreground: oklch(0.96 0 0);
+  --sidebar-border: oklch(1 0 0 / 11%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+/* Type and motion tokens. These are theme-independent, so they sit on their
+   own root block rather than inside the light or dark palette. */
+:root {
+  /* Type scale. Few sizes, far apart: one display, one heading, one lead,
+     one body, one small. Values follow the studied ranges. */
+  --step-display: clamp(2.75rem, 1rem + 6.9vw, 7rem);
+  --step-head: clamp(1.75rem, 1.1rem + 2.4vw, 3rem);
+  --step-lead: clamp(1.25rem, 1.08rem + 0.72vw, 1.6rem);
+  --step-body: clamp(1.0625rem, 1rem + 0.26vw, 1.1875rem);
+  --step-small: 0.8125rem;
+
+  /* Motion tokens. Entering always leaves on an ease-out. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-soft: cubic-bezier(0.33, 1, 0.68, 1);
+  --t-press: 140ms;
+  --t-hover: 180ms;
+  --t-ui: 240ms;
+  --t-reveal: 820ms;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
-  button:not(:disabled), [role="button"]:not(:disabled) {
-    cursor: pointer;
-  }
+
   html {
     @apply font-sans;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-size: var(--step-body);
+    line-height: 1.55;
+    font-kerning: normal;
+    text-rendering: optimizeLegibility;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  p {
+    max-width: 62ch;
+    text-wrap: pretty;
+    margin: 0;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading);
+    hyphens: none;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  ::selection {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* Feedback under the hand: name the properties, never `all`. */
+  button:not(:disabled),
+  [role="button"]:not(:disabled),
+  a[href] {
+    transition-property: color, background-color, border-color, opacity, transform;
+    transition-duration: var(--t-press);
+    transition-timing-function: var(--ease-out);
+  }
+  button:not(:disabled):active,
+  [role="button"]:not(:disabled):active {
+    transform: scale(0.97);
+  }
+  a[href] {
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 0.07em;
+    transition-property: color, text-decoration-color;
+    transition-duration: var(--t-hover);
+    transition-timing-function: ease;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    a[href]:hover {
+      text-decoration-color: currentColor;
+    }
+  }
+}
+
+@layer components {
+  /* Display type: leading and tracking tighten as the size grows. */
+  .display {
+    font-family: var(--font-heading);
+    font-size: var(--step-display);
+    line-height: 0.94;
+    letter-spacing: -0.038em;
+    font-weight: 500;
+    /* Optical alignment for round and diagonal left edges. */
+    margin-left: -0.045em;
+    max-width: 15ch;
+  }
+
+  .section-head {
+    font-family: var(--font-heading);
+    font-size: var(--step-head);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-weight: 500;
+    max-width: 18ch;
+  }
+
+  .lead {
+    font-size: var(--step-lead);
+    line-height: 1.4;
+    max-width: 38ch;
+    letter-spacing: -0.011em;
+  }
+
+  .label {
+    font-family: var(--font-geist-mono);
+    font-size: var(--step-small);
+    line-height: 1.45;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+
+  /* Running text is set in the full ink. Grey is for secondary notes only. */
+  .body {
+    font-size: var(--step-body);
+    line-height: 1.55;
+    color: var(--foreground);
+  }
+
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Page rhythm: one grid, one pair of margins. */
+  .shell {
+    width: 100%;
+    margin-inline: auto;
+    max-width: 82rem;
+    padding-inline: clamp(1rem, 4vw, 2rem);
+  }
+
+  /* Section separation is a tone step first, a hairline second. */
+  .field {
+    /* One tone step from the page in both themes. */
+    background-color: color-mix(
+      in oklch,
+      var(--background) 94%,
+      color-mix(in oklch, var(--foreground) 6%, var(--background))
+    );
+  }
+
+  /* Faint line grid, used sparingly. */
+  .grid-lines {
+    background-image:
+      linear-gradient(to right, var(--border) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+    background-size: 72px 72px;
+  }
+
+  /* Corner ticks: a registration mark on a frame. */
+  .corner-ticks {
+    position: relative;
+  }
+  .corner-ticks::before,
+  .corner-ticks::after {
+    content: "";
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    pointer-events: none;
+  }
+  .corner-ticks::before {
+    top: -1px;
+    left: -1px;
+    border-top: 1px solid var(--ring);
+    border-left: 1px solid var(--ring);
+  }
+  .corner-ticks::after {
+    right: -1px;
+    bottom: -1px;
+    border-right: 1px solid var(--ring);
+    border-bottom: 1px solid var(--ring);
+  }
+}
+
+@layer utilities {
+  .hairline-t { border-top: 1px solid var(--border); }
+  .hairline-b { border-bottom: 1px solid var(--border); }
+  .hairline-l { border-left: 1px solid var(--border); }
+  .hairline-r { border-right: 1px solid var(--border); }
+}
+
+/* ── Motion ─────────────────────────────────────────────────────────────
+   The static page is finished on its own. Everything below is gated behind
+   `html.js`, which a one-line inline script sets, so a failed or blocked
+   script leaves the page fully visible rather than blank. */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Signature move: the headline rises from behind its own baselines. */
+  .js .lines .line {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.09em;
+    margin-bottom: -0.09em;
+  }
+  .js .lines [data-line] {
+    display: block;
+    transform: translateY(105%);
+    animation: line-up 980ms var(--ease-out) forwards;
+    animation-delay: calc(var(--i, 0) * 110ms + 140ms);
+  }
+
+  /* Hero load sequence, reading order, staggered. */
+  .js [data-rise] {
+    opacity: 0;
+    transform: translateY(18px);
+    animation: rise var(--t-reveal) var(--ease-out) forwards;
+    animation-delay: calc(var(--i, 0) * 90ms + 320ms);
+  }
+
+  /* Scroll reveals, once, never replayed. */
+  .js [data-reveal] {
+    opacity: 0;
+    transform: translateY(26px);
+    transition:
+      opacity 680ms var(--ease-out),
+      transform 860ms var(--ease-out);
+    transition-delay: calc(var(--i, 0) * 70ms);
+  }
+  .js [data-reveal].is-in {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* The interface fragment opens like a shutter. Driven by a CSS animation so
+     it releases on its own; it never waits on the observer. */
+  .js .shutter {
+    clip-path: inset(0 0 100% 0);
+    animation: shutter-open 1100ms var(--ease-in-out) 420ms forwards;
+  }
+
+  /* A status dot reads as live without pulsing. */
+  .js .mark-in {
+    opacity: 0;
+    animation: rise 520ms var(--ease-out) forwards;
+    animation-delay: calc(var(--i, 0) * 110ms + 620ms);
+  }
+
+  /* Hover is a pointer affordance only. */
+  @media (hover: hover) and (pointer: fine) {
+    .js .row-link:hover .row-arrow {
+      transform: translateX(4px);
+    }
+    .row-arrow {
+      transition: transform var(--t-hover) var(--ease-out);
+    }
+  }
+}
+
+@keyframes line-up {
+  to { transform: none; }
+}
+@keyframes rise {
+  to { opacity: 1; transform: none; }
+}
+@keyframes shutter-open {
+  to { clip-path: inset(0 0 0 0); }
+}
+
+/* Reduced motion keeps opacity and colour, drops travel. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

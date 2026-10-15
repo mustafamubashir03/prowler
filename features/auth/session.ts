@@ -2,6 +2,7 @@ import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 
 import { auth } from "@/lib/auth"
+import { AUTH_ROUTES } from "@/features/lib/routes"
 
 /**
  * Session reads. These are NOT server actions: a "use server" module turns every
@@ -23,7 +24,7 @@ export async function getCurrentUser() {
 export async function requireAuth() {
     const session = await getSession()
     if (!session) {
-        return redirect("/sign-in")
+        return redirect(AUTH_ROUTES.signIn)
     }
     return session
 }
@@ -31,6 +32,6 @@ export async function requireAuth() {
 export async function requireUnAuth() {
     const session = await getSession()
     if (session) {
-        return redirect("/")
+        return redirect(AUTH_ROUTES.home)
     }
 }

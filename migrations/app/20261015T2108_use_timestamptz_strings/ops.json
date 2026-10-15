@@ -1,0 +1,2076 @@
+[
+  {
+    "id": "renameTable.GithubInstallation",
+    "label": "Rename table \"GithubInstallation\" to \"GitHubInstallation\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "GitHubInstallation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"GithubInstallation\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GithubInstallation\""
+        ]
+      },
+      {
+        "description": "ensure table \"GitHubInstallation\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GitHubInstallation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "rename table \"GithubInstallation\" to \"GitHubInstallation\"",
+        "sql": "ALTER TABLE \"public\".\"GithubInstallation\" RENAME TO \"GitHubInstallation\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"GitHubInstallation\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GitHubInstallation\""
+        ]
+      },
+      {
+        "description": "verify table \"GithubInstallation\" no longer exists",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GithubInstallation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "primaryKey.public.GitHubInstallation.GithubInstallation_pkey.rename",
+    "label": "Rename primary key \"GithubInstallation_pkey\" to \"GitHubInstallation_pkey\" on \"GitHubInstallation\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "primaryKey",
+        "name": "GitHubInstallation_pkey",
+        "table": "GitHubInstallation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"GithubInstallation_pkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GithubInstallation_pkey",
+          "public",
+          "\"public\".\"GitHubInstallation\""
+        ]
+      },
+      {
+        "description": "ensure constraint \"GitHubInstallation_pkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GitHubInstallation_pkey",
+          "public",
+          "\"public\".\"GitHubInstallation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "rename primary key \"GithubInstallation_pkey\" to \"GitHubInstallation_pkey\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubInstallation\" RENAME CONSTRAINT \"GithubInstallation_pkey\" TO \"GitHubInstallation_pkey\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"GitHubInstallation_pkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GitHubInstallation_pkey",
+          "public",
+          "\"public\".\"GitHubInstallation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.public.GitHubInstallation.GithubInstallation_userId_fkey.rename",
+    "label": "Rename foreign key \"GithubInstallation_userId_fkey\" to \"GitHubInstallation_userId_fkey\" on \"GitHubInstallation\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "GitHubInstallation_userId_fkey",
+        "table": "GitHubInstallation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"GithubInstallation_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GithubInstallation_userId_fkey",
+          "public",
+          "\"public\".\"GitHubInstallation\""
+        ]
+      },
+      {
+        "description": "ensure constraint \"GitHubInstallation_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GitHubInstallation_userId_fkey",
+          "public",
+          "\"public\".\"GitHubInstallation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "rename foreign key \"GithubInstallation_userId_fkey\" to \"GitHubInstallation_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubInstallation\" RENAME CONSTRAINT \"GithubInstallation_userId_fkey\" TO \"GitHubInstallation_userId_fkey\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"GitHubInstallation_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GitHubInstallation_userId_fkey",
+          "public",
+          "\"public\".\"GitHubInstallation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.public.GitHubInstallation.GithubInstallation_userId_idx_a489d58a.rename",
+    "label": "Rename index \"GithubInstallation_userId_idx_a489d58a\" to \"GitHubInstallation_userId_idx_a489d58a\" on \"GitHubInstallation\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "GitHubInstallation_userId_idx_a489d58a",
+        "table": "GitHubInstallation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"GithubInstallation_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GithubInstallation_userId_idx_a489d58a\""
+        ]
+      },
+      {
+        "description": "ensure index \"GitHubInstallation_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GitHubInstallation_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "rename index \"GithubInstallation_userId_idx_a489d58a\" to \"GitHubInstallation_userId_idx_a489d58a\"",
+        "sql": "ALTER INDEX \"public\".\"GithubInstallation_userId_idx_a489d58a\" RENAME TO \"GitHubInstallation_userId_idx_a489d58a\"",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"GitHubInstallation_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GitHubInstallation_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "renameTable.Repository",
+    "label": "Rename table \"Repository\" to \"GitHubRepository\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "GitHubRepository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Repository\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Repository\""
+        ]
+      },
+      {
+        "description": "ensure table \"GitHubRepository\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GitHubRepository\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "rename table \"Repository\" to \"GitHubRepository\"",
+        "sql": "ALTER TABLE \"public\".\"Repository\" RENAME TO \"GitHubRepository\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"GitHubRepository\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GitHubRepository\""
+        ]
+      },
+      {
+        "description": "verify table \"Repository\" no longer exists",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Repository\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "primaryKey.public.GitHubRepository.Repository_pkey.rename",
+    "label": "Rename primary key \"Repository_pkey\" to \"GitHubRepository_pkey\" on \"GitHubRepository\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "primaryKey",
+        "name": "GitHubRepository_pkey",
+        "table": "GitHubRepository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Repository_pkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Repository_pkey",
+          "public",
+          "\"public\".\"GitHubRepository\""
+        ]
+      },
+      {
+        "description": "ensure constraint \"GitHubRepository_pkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GitHubRepository_pkey",
+          "public",
+          "\"public\".\"GitHubRepository\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "rename primary key \"Repository_pkey\" to \"GitHubRepository_pkey\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubRepository\" RENAME CONSTRAINT \"Repository_pkey\" TO \"GitHubRepository_pkey\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"GitHubRepository_pkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GitHubRepository_pkey",
+          "public",
+          "\"public\".\"GitHubRepository\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.public.GitHubRepository.Repository_installationId_fkey.rename",
+    "label": "Rename foreign key \"Repository_installationId_fkey\" to \"GitHubRepository_installationId_fkey\" on \"GitHubRepository\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "GitHubRepository_installationId_fkey",
+        "table": "GitHubRepository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Repository_installationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Repository_installationId_fkey",
+          "public",
+          "\"public\".\"GitHubRepository\""
+        ]
+      },
+      {
+        "description": "ensure constraint \"GitHubRepository_installationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GitHubRepository_installationId_fkey",
+          "public",
+          "\"public\".\"GitHubRepository\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "rename foreign key \"Repository_installationId_fkey\" to \"GitHubRepository_installationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubRepository\" RENAME CONSTRAINT \"Repository_installationId_fkey\" TO \"GitHubRepository_installationId_fkey\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"GitHubRepository_installationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GitHubRepository_installationId_fkey",
+          "public",
+          "\"public\".\"GitHubRepository\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.public.GitHubRepository.Repository_installationId_idx_17db6dbe.rename",
+    "label": "Rename index \"Repository_installationId_idx_17db6dbe\" to \"GitHubRepository_installationId_idx_17db6dbe\" on \"GitHubRepository\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "GitHubRepository_installationId_idx_17db6dbe",
+        "table": "GitHubRepository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Repository_installationId_idx_17db6dbe\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Repository_installationId_idx_17db6dbe\""
+        ]
+      },
+      {
+        "description": "ensure index \"GitHubRepository_installationId_idx_17db6dbe\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GitHubRepository_installationId_idx_17db6dbe\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "rename index \"Repository_installationId_idx_17db6dbe\" to \"GitHubRepository_installationId_idx_17db6dbe\"",
+        "sql": "ALTER INDEX \"public\".\"Repository_installationId_idx_17db6dbe\" RENAME TO \"GitHubRepository_installationId_idx_17db6dbe\"",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"GitHubRepository_installationId_idx_17db6dbe\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GitHubRepository_installationId_idx_17db6dbe\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "renameColumn.GitHubInstallation.accountLogin",
+    "label": "Rename column \"GitHubInstallation\".\"accountLogin\" to \"targetLogin\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "targetLogin",
+        "table": "GitHubInstallation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"accountLogin\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "accountLogin"
+        ]
+      },
+      {
+        "description": "ensure column \"targetLogin\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "targetLogin"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "rename column \"accountLogin\" to \"targetLogin\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubInstallation\" RENAME COLUMN \"accountLogin\" TO \"targetLogin\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"targetLogin\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "targetLogin"
+        ]
+      },
+      {
+        "description": "verify column \"accountLogin\" no longer exists",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "accountLogin"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "renameColumn.GitHubInstallation.accountType",
+    "label": "Rename column \"GitHubInstallation\".\"accountType\" to \"targetType\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "targetType",
+        "table": "GitHubInstallation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"accountType\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "accountType"
+        ]
+      },
+      {
+        "description": "ensure column \"targetType\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "targetType"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "rename column \"accountType\" to \"targetType\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubInstallation\" RENAME COLUMN \"accountType\" TO \"targetType\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"targetType\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "targetType"
+        ]
+      },
+      {
+        "description": "verify column \"accountType\" no longer exists",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "accountType"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "renameColumn.GitHubInstallation.installationId",
+    "label": "Rename column \"GitHubInstallation\".\"installationId\" to \"githubInstallationId\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "githubInstallationId",
+        "table": "GitHubInstallation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"installationId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "installationId"
+        ]
+      },
+      {
+        "description": "ensure column \"githubInstallationId\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "githubInstallationId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "rename column \"installationId\" to \"githubInstallationId\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubInstallation\" RENAME COLUMN \"installationId\" TO \"githubInstallationId\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"githubInstallationId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "githubInstallationId"
+        ]
+      },
+      {
+        "description": "verify column \"installationId\" no longer exists",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "installationId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.public.GitHubInstallation.GithubInstallation_installationId_key.rename",
+    "label": "Rename unique constraint \"GithubInstallation_installationId_key\" to \"GitHubInstallation_githubInstallationId_key\" on \"GitHubInstallation\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "GitHubInstallation_githubInstallationId_key",
+        "table": "GitHubInstallation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"GithubInstallation_installationId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GithubInstallation_installationId_key",
+          "public",
+          "\"public\".\"GitHubInstallation\""
+        ]
+      },
+      {
+        "description": "ensure constraint \"GitHubInstallation_githubInstallationId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GitHubInstallation_githubInstallationId_key",
+          "public",
+          "\"public\".\"GitHubInstallation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "rename unique constraint \"GithubInstallation_installationId_key\" to \"GitHubInstallation_githubInstallationId_key\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubInstallation\" RENAME CONSTRAINT \"GithubInstallation_installationId_key\" TO \"GitHubInstallation_githubInstallationId_key\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"GitHubInstallation_githubInstallationId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GitHubInstallation_githubInstallationId_key",
+          "public",
+          "\"public\".\"GitHubInstallation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "renameColumn.GitHubRepository.githubId",
+    "label": "Rename column \"GitHubRepository\".\"githubId\" to \"githubRepositoryId\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "githubRepositoryId",
+        "table": "GitHubRepository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"githubId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "githubId"
+        ]
+      },
+      {
+        "description": "ensure column \"githubRepositoryId\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "githubRepositoryId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "rename column \"githubId\" to \"githubRepositoryId\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubRepository\" RENAME COLUMN \"githubId\" TO \"githubRepositoryId\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"githubRepositoryId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "githubRepositoryId"
+        ]
+      },
+      {
+        "description": "verify column \"githubId\" no longer exists",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "githubId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.public.GitHubRepository.Repository_githubId_key.rename",
+    "label": "Rename unique constraint \"Repository_githubId_key\" to \"GitHubRepository_githubRepositoryId_key\" on \"GitHubRepository\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "GitHubRepository_githubRepositoryId_key",
+        "table": "GitHubRepository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Repository_githubId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Repository_githubId_key",
+          "public",
+          "\"public\".\"GitHubRepository\""
+        ]
+      },
+      {
+        "description": "ensure constraint \"GitHubRepository_githubRepositoryId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GitHubRepository_githubRepositoryId_key",
+          "public",
+          "\"public\".\"GitHubRepository\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "rename unique constraint \"Repository_githubId_key\" to \"GitHubRepository_githubRepositoryId_key\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubRepository\" RENAME CONSTRAINT \"Repository_githubId_key\" TO \"GitHubRepository_githubRepositoryId_key\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"GitHubRepository_githubRepositoryId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GitHubRepository_githubRepositoryId_key",
+          "public",
+          "\"public\".\"GitHubRepository\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropDefault.GitHubInstallation.id",
+    "label": "Drop default on \"GitHubInstallation\".\"id\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "id",
+        "table": "GitHubInstallation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"id\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "id"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop default on \"id\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubInstallation\" ALTER COLUMN \"id\" DROP DEFAULT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"id\" has no default",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"column_default\" IS NULL)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.GitHubRepository.description",
+    "label": "Drop column \"description\" from \"GitHubRepository\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "description",
+        "table": "GitHubRepository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"description\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "description"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"description\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubRepository\" DROP COLUMN \"description\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"description\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "description"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.GitHubRepository.fileCount",
+    "label": "Drop column \"fileCount\" from \"GitHubRepository\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "fileCount",
+        "table": "GitHubRepository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"fileCount\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "fileCount"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"fileCount\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubRepository\" DROP COLUMN \"fileCount\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"fileCount\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "fileCount"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropDefault.GitHubRepository.id",
+    "label": "Drop default on \"GitHubRepository\".\"id\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "id",
+        "table": "GitHubRepository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"id\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "id"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop default on \"id\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubRepository\" ALTER COLUMN \"id\" DROP DEFAULT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"id\" has no default",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"column_default\" IS NULL)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropDefault.GitHubRepository.private",
+    "label": "Drop default on \"GitHubRepository\".\"private\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "private",
+        "table": "GitHubRepository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"private\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "private"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop default on \"private\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubRepository\" ALTER COLUMN \"private\" DROP DEFAULT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"private\" has no default",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"column_default\" IS NULL)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "private"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropConstraint.GitHubRepository.Repository_fullName_key",
+    "label": "Drop constraint \"Repository_fullName_key\" on \"GitHubRepository\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Repository_fullName_key",
+        "table": "GitHubRepository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Repository_fullName_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Repository_fullName_key",
+          "public",
+          "\"public\".\"GitHubRepository\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop constraint \"Repository_fullName_key\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubRepository\" DROP CONSTRAINT \"Repository_fullName_key\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Repository_fullName_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Repository_fullName_key",
+          "public",
+          "\"public\".\"GitHubRepository\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropConstraint.GitHubRepository.Repository_pineconeNamespace_key",
+    "label": "Drop constraint \"Repository_pineconeNamespace_key\" on \"GitHubRepository\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Repository_pineconeNamespace_key",
+        "table": "GitHubRepository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Repository_pineconeNamespace_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Repository_pineconeNamespace_key",
+          "public",
+          "\"public\".\"GitHubRepository\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop constraint \"Repository_pineconeNamespace_key\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubRepository\" DROP CONSTRAINT \"Repository_pineconeNamespace_key\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Repository_pineconeNamespace_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Repository_pineconeNamespace_key",
+          "public",
+          "\"public\".\"GitHubRepository\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.GitHubRepository.pineconeNamespace",
+    "label": "Drop column \"pineconeNamespace\" from \"GitHubRepository\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "pineconeNamespace",
+        "table": "GitHubRepository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"pineconeNamespace\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "pineconeNamespace"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"pineconeNamespace\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubRepository\" DROP COLUMN \"pineconeNamespace\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"pineconeNamespace\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "pineconeNamespace"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.PullRequestReview",
+    "label": "Create table \"PullRequestReview\"",
+    "summary": "Creates table \"PullRequestReview\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "PullRequestReview"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"PullRequestReview\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PullRequestReview\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"PullRequestReview\"",
+        "sql": "CREATE TABLE \"public\".\"PullRequestReview\" (\n  \"author\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"fullName\" text NOT NULL,\n  \"githubPrNumber\" int4 NOT NULL,\n  \"githubRepositoryId\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"owner\" text NOT NULL,\n  \"prUrl\" text NOT NULL,\n  \"repoName\" text NOT NULL,\n  \"repositoryId\" text,\n  \"reviewBody\" text,\n  \"status\" text DEFAULT 'PENDING' NOT NULL,\n  \"title\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"PullRequestReview\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PullRequestReview\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.GitHubInstallation.status",
+    "label": "Add column \"status\" to \"GitHubInstallation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "status",
+        "table": "GitHubInstallation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"status\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "status"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"status\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubInstallation\" ADD COLUMN \"status\" text DEFAULT 'ACTIVE' NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"status\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "status"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.GitHubInstallation.repositorySelection",
+    "label": "Add column \"repositorySelection\" to \"GitHubInstallation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "repositorySelection",
+        "table": "GitHubInstallation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"repositorySelection\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "repositorySelection"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"repositorySelection\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubInstallation\" ADD COLUMN \"repositorySelection\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"repositorySelection\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "repositorySelection"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "data_migration.backfill-GitHubInstallation-repositorySelection",
+    "label": "Data transform: backfill-GitHubInstallation-repositorySelection",
+    "operationClass": "data",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [
+      {
+        "description": "Check backfill-GitHubInstallation-repositorySelection has work to do",
+        "sql": "SELECT EXISTS (SELECT \"id\" AS \"id\" FROM \"public\".\"GitHubInstallation\" WHERE \"repositorySelection\" IS NULL LIMIT 1) AS ok",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "Run backfill-GitHubInstallation-repositorySelection",
+        "sql": "UPDATE \"public\".\"GitHubInstallation\" SET \"repositorySelection\" = $1, \"updatedAt\" = $2 WHERE \"repositorySelection\" IS NULL",
+        "params": [
+          "all",
+          "2026-10-15T21:10:45.250Z"
+        ]
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "Verify backfill-GitHubInstallation-repositorySelection resolved all violations",
+        "sql": "SELECT NOT EXISTS (SELECT \"id\" AS \"id\" FROM \"public\".\"GitHubInstallation\" WHERE \"repositorySelection\" IS NULL LIMIT 1) AS ok",
+        "params": []
+      }
+    ]
+  },
+  {
+    "id": "alterNullability.setNotNull.GitHubInstallation.repositorySelection",
+    "label": "Set NOT NULL on \"GitHubInstallation\".\"repositorySelection\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "repositorySelection",
+        "table": "GitHubInstallation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"repositorySelection\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "repositorySelection"
+        ]
+      },
+      {
+        "description": "ensure no NULL values in \"repositorySelection\"",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"GitHubInstallation\" WHERE \"repositorySelection\" IS NULL) AS \"result\"",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "set NOT NULL on \"repositorySelection\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubInstallation\" ALTER COLUMN \"repositorySelection\" SET NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"repositorySelection\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "repositorySelection",
+          "NO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.GitHubInstallation.targetId",
+    "label": "Add column \"targetId\" to \"GitHubInstallation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "targetId",
+        "table": "GitHubInstallation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"targetId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "targetId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"targetId\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubInstallation\" ADD COLUMN \"targetId\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"targetId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "targetId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "data_migration.backfill-GitHubInstallation-targetId",
+    "label": "Data transform: backfill-GitHubInstallation-targetId",
+    "operationClass": "data",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [
+      {
+        "description": "Check backfill-GitHubInstallation-targetId has work to do",
+        "sql": "SELECT EXISTS (SELECT \"id\" AS \"id\" FROM \"public\".\"GitHubInstallation\" WHERE \"targetId\" IS NULL LIMIT 1) AS ok",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "Run backfill-GitHubInstallation-targetId",
+        "sql": "UPDATE \"public\".\"GitHubInstallation\" SET \"targetId\" = $1, \"updatedAt\" = $2 WHERE \"targetId\" IS NULL",
+        "params": [
+          "0",
+          "2026-10-15T21:10:45.258Z"
+        ]
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "Verify backfill-GitHubInstallation-targetId resolved all violations",
+        "sql": "SELECT NOT EXISTS (SELECT \"id\" AS \"id\" FROM \"public\".\"GitHubInstallation\" WHERE \"targetId\" IS NULL LIMIT 1) AS ok",
+        "params": []
+      }
+    ]
+  },
+  {
+    "id": "alterNullability.setNotNull.GitHubInstallation.targetId",
+    "label": "Set NOT NULL on \"GitHubInstallation\".\"targetId\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "targetId",
+        "table": "GitHubInstallation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"targetId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "targetId"
+        ]
+      },
+      {
+        "description": "ensure no NULL values in \"targetId\"",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"GitHubInstallation\" WHERE \"targetId\" IS NULL) AS \"result\"",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "set NOT NULL on \"targetId\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubInstallation\" ALTER COLUMN \"targetId\" SET NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"targetId\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "targetId",
+          "NO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.GitHubRepository.nodeId",
+    "label": "Add column \"nodeId\" to \"GitHubRepository\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "nodeId",
+        "table": "GitHubRepository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"nodeId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "nodeId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"nodeId\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubRepository\" ADD COLUMN \"nodeId\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"nodeId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "nodeId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "data_migration.backfill-GitHubRepository-nodeId",
+    "label": "Data transform: backfill-GitHubRepository-nodeId",
+    "operationClass": "data",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [
+      {
+        "description": "Check backfill-GitHubRepository-nodeId has work to do",
+        "sql": "SELECT EXISTS (SELECT \"id\" AS \"id\" FROM \"public\".\"GitHubRepository\" WHERE \"nodeId\" IS NULL LIMIT 1) AS ok",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "Run backfill-GitHubRepository-nodeId",
+        "sql": "UPDATE \"public\".\"GitHubRepository\" SET \"nodeId\" = $1, \"updatedAt\" = $2 WHERE \"nodeId\" IS NULL",
+        "params": [
+          "",
+          "2026-10-15T21:10:45.259Z"
+        ]
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "Verify backfill-GitHubRepository-nodeId resolved all violations",
+        "sql": "SELECT NOT EXISTS (SELECT \"id\" AS \"id\" FROM \"public\".\"GitHubRepository\" WHERE \"nodeId\" IS NULL LIMIT 1) AS ok",
+        "params": []
+      }
+    ]
+  },
+  {
+    "id": "alterNullability.setNotNull.GitHubRepository.nodeId",
+    "label": "Set NOT NULL on \"GitHubRepository\".\"nodeId\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "nodeId",
+        "table": "GitHubRepository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"nodeId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "nodeId"
+        ]
+      },
+      {
+        "description": "ensure no NULL values in \"nodeId\"",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"GitHubRepository\" WHERE \"nodeId\" IS NULL) AS \"result\"",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "set NOT NULL on \"nodeId\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubRepository\" ALTER COLUMN \"nodeId\" SET NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"nodeId\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "nodeId",
+          "NO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "alterType.GitHubInstallation.githubInstallationId",
+    "label": "Alter type of \"GitHubInstallation\".\"githubInstallationId\" to text",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "githubInstallationId",
+        "table": "GitHubInstallation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"githubInstallationId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "githubInstallationId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "alter type of \"githubInstallationId\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubInstallation\" ALTER COLUMN \"githubInstallationId\" TYPE text USING \"githubInstallationId\"::text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"githubInstallationId\" has type \"text\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "githubInstallationId",
+          "text"
+        ]
+      }
+    ],
+    "meta": {
+      "warning": "TABLE_REWRITE"
+    }
+  },
+  {
+    "id": "alterType.GitHubInstallation.id",
+    "label": "Alter type of \"GitHubInstallation\".\"id\" to text",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "id",
+        "table": "GitHubInstallation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"id\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "id"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "alter type of \"id\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubInstallation\" ALTER COLUMN \"id\" TYPE text USING \"id\"::text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"id\" has type \"text\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "id",
+          "text"
+        ]
+      }
+    ],
+    "meta": {
+      "warning": "TABLE_REWRITE"
+    }
+  },
+  {
+    "id": "alterType.GitHubRepository.id",
+    "label": "Alter type of \"GitHubRepository\".\"id\" to text",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "id",
+        "table": "GitHubRepository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"id\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "id"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "alter type of \"id\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubRepository\" ALTER COLUMN \"id\" TYPE text USING \"id\"::text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"id\" has type \"text\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "id",
+          "text"
+        ]
+      }
+    ],
+    "meta": {
+      "warning": "TABLE_REWRITE"
+    }
+  },
+  {
+    "id": "alterType.GitHubRepository.indexedAt",
+    "label": "Alter type of \"GitHubRepository\".\"indexedAt\" to timestamptz",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "indexedAt",
+        "table": "GitHubRepository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"indexedAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "indexedAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "alter type of \"indexedAt\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubRepository\" ALTER COLUMN \"indexedAt\" TYPE timestamptz USING \"indexedAt\"::timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"indexedAt\" has type \"timestamp with time zone\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "indexedAt",
+          "timestamp with time zone"
+        ]
+      }
+    ],
+    "meta": {
+      "warning": "TABLE_REWRITE"
+    }
+  },
+  {
+    "id": "alterNullability.dropNotNull.GitHubRepository.indexedAt",
+    "label": "Drop NOT NULL on \"GitHubRepository\".\"indexedAt\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "indexedAt",
+        "table": "GitHubRepository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"indexedAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "indexedAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop NOT NULL on \"indexedAt\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubRepository\" ALTER COLUMN \"indexedAt\" DROP NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"indexedAt\" is nullable",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "indexedAt",
+          "YES"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "alterType.GitHubRepository.installationId",
+    "label": "Alter type of \"GitHubRepository\".\"installationId\" to text",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "installationId",
+        "table": "GitHubRepository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"installationId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "installationId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "alter type of \"installationId\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubRepository\" ALTER COLUMN \"installationId\" TYPE text USING \"installationId\"::text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"installationId\" has type \"text\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "installationId",
+          "text"
+        ]
+      }
+    ],
+    "meta": {
+      "warning": "TABLE_REWRITE"
+    }
+  },
+  {
+    "id": "data_migration.handle-nulls-GitHubRepository-defaultBranch",
+    "label": "Data transform: handle-nulls-GitHubRepository-defaultBranch",
+    "operationClass": "data",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [
+      {
+        "description": "Check handle-nulls-GitHubRepository-defaultBranch has work to do",
+        "sql": "SELECT EXISTS (SELECT \"id\" AS \"id\" FROM \"public\".\"GitHubRepository\" WHERE \"defaultBranch\" IS NULL LIMIT 1) AS ok",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "Run handle-nulls-GitHubRepository-defaultBranch",
+        "sql": "UPDATE \"public\".\"GitHubRepository\" SET \"defaultBranch\" = $1, \"updatedAt\" = $2 WHERE \"defaultBranch\" IS NULL",
+        "params": [
+          "main",
+          "2026-10-15T21:10:45.261Z"
+        ]
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "Verify handle-nulls-GitHubRepository-defaultBranch resolved all violations",
+        "sql": "SELECT NOT EXISTS (SELECT \"id\" AS \"id\" FROM \"public\".\"GitHubRepository\" WHERE \"defaultBranch\" IS NULL LIMIT 1) AS ok",
+        "params": []
+      }
+    ]
+  },
+  {
+    "id": "alterNullability.setNotNull.GitHubRepository.defaultBranch",
+    "label": "Set NOT NULL on \"GitHubRepository\".\"defaultBranch\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "defaultBranch",
+        "table": "GitHubRepository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"defaultBranch\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "defaultBranch"
+        ]
+      },
+      {
+        "description": "ensure no NULL values in \"defaultBranch\"",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"GitHubRepository\" WHERE \"defaultBranch\" IS NULL) AS \"result\"",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "set NOT NULL on \"defaultBranch\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubRepository\" ALTER COLUMN \"defaultBranch\" SET NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"defaultBranch\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "defaultBranch",
+          "NO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "alterNullability.dropNotNull.GitHubInstallation.userId",
+    "label": "Drop NOT NULL on \"GitHubInstallation\".\"userId\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "userId",
+        "table": "GitHubInstallation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"userId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "userId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop NOT NULL on \"userId\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubInstallation\" ALTER COLUMN \"userId\" DROP NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"userId\" is nullable",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubInstallation",
+          "userId",
+          "YES"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "setDefault.GitHubRepository.indexStatus",
+    "label": "Set default on \"GitHubRepository\".\"indexStatus\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "indexStatus",
+        "table": "GitHubRepository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"indexStatus\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "indexStatus"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "set default on \"indexStatus\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubRepository\" ALTER COLUMN \"indexStatus\" SET DEFAULT 'NOT_INDEXED'"
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "unique.PullRequestReview.PullRequestReview_githubRepositoryId_githubPrNumber_key",
+    "label": "Add unique constraint on \"PullRequestReview\" (githubRepositoryId, githubPrNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "PullRequestReview_githubRepositoryId_githubPrNumber_key",
+        "table": "PullRequestReview"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"PullRequestReview_githubRepositoryId_githubPrNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "PullRequestReview_githubRepositoryId_githubPrNumber_key",
+          "public",
+          "\"public\".\"PullRequestReview\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"PullRequestReview_githubRepositoryId_githubPrNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"PullRequestReview\" ADD CONSTRAINT \"PullRequestReview_githubRepositoryId_githubPrNumber_key\" UNIQUE (\"githubRepositoryId\", \"githubPrNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"PullRequestReview_githubRepositoryId_githubPrNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "PullRequestReview_githubRepositoryId_githubPrNumber_key",
+          "public",
+          "\"public\".\"PullRequestReview\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.PullRequestReview.PullRequestReview_repositoryId_idx_dce7a8ba",
+    "label": "Create index \"PullRequestReview_repositoryId_idx_dce7a8ba\" on \"PullRequestReview\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "PullRequestReview_repositoryId_idx_dce7a8ba",
+        "table": "PullRequestReview"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"PullRequestReview_repositoryId_idx_dce7a8ba\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PullRequestReview_repositoryId_idx_dce7a8ba\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"PullRequestReview_repositoryId_idx_dce7a8ba\"",
+        "sql": "CREATE INDEX \"PullRequestReview_repositoryId_idx_dce7a8ba\" ON \"public\".\"PullRequestReview\" (\"repositoryId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"PullRequestReview_repositoryId_idx_dce7a8ba\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PullRequestReview_repositoryId_idx_dce7a8ba\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.PullRequestReview.PullRequestReview_repositoryId_fkey",
+    "label": "Add foreign key \"PullRequestReview_repositoryId_fkey\" on \"PullRequestReview\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "PullRequestReview_repositoryId_fkey",
+        "table": "PullRequestReview"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"PullRequestReview_repositoryId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "PullRequestReview_repositoryId_fkey",
+          "public",
+          "\"public\".\"PullRequestReview\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"PullRequestReview_repositoryId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"PullRequestReview\"\nADD CONSTRAINT \"PullRequestReview_repositoryId_fkey\"\nFOREIGN KEY (\"repositoryId\")\nREFERENCES \"public\".\"GitHubRepository\" (\"id\")\nON DELETE SET NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"PullRequestReview_repositoryId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "PullRequestReview_repositoryId_fkey",
+          "public",
+          "\"public\".\"PullRequestReview\""
+        ]
+      }
+    ]
+  }
+]

@@ -32,6 +32,46 @@ type CarouselContextProps = {
 
 const CarouselContext = React.createContext<CarouselContextProps | null>(null)
 
+const PREV = 1
+const NEXT = 2
+
+/**
+ * Reads Emby's scroll capability straight from the engine instead of mirroring
+ * it into component state. Seeding state inside an effect forces a second
+ * render pass; subscribing to the engine as an external store keeps the
+ * scroll buttons correct from the first commit onward.
+ */
+function useScrollState(api: CarouselApi | undefined) {
+  const subscribe = React.useCallback(
+    (onStoreChange: () => void) => {
+      if (!api) return () => {}
+
+      api.on("reInit", onStoreChange)
+      api.on("select", onStoreChange)
+
+      return () => {
+        api.off("reInit", onStoreChange)
+        api.off("select", onStoreChange)
+      }
+    },
+    [api],
+  )
+
+  const getSnapshot = React.useCallback(() => {
+    if (!api) return 0
+
+    return (api.canScrollPrev() ? PREV : 0) + (api.canScrollNext() ? NEXT : 0)
+  }, [api])
+
+  const getServerSnapshot = React.useCallback(() => 0, [])
+
+  return React.useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    getServerSnapshot,
+  )
+}
+
 function useCarousel() {
   const context = React.useContext(CarouselContext)
 
@@ -58,14 +98,11 @@ function Carousel({
     },
     plugins
   )
-  const [canScrollPrev, setCanScrollPrev] = React.useState(false)
-  const [canScrollNext, setCanScrollNext] = React.useState(false)
-
-  const onSelect = React.useCallback((api: CarouselApi) => {
-    if (!api) return
-    setCanScrollPrev(api.canScrollPrev())
-    setCanScrollNext(api.canScrollNext())
-  }, [])
+  const scrollState = useScrollState(api)
+const canScrollPrev = (scrollState & PREV) === PREV
+const canScrollNext = (scrollState & NEXT) === NEXT
+  const embyApiRef =
+    React.useRef<(HTMLDivElement & { embyApi?: CarouselApi }) | null>(null)
 
   const scrollPrev = React.useCallback(() => {
     api?.scrollPrev()
@@ -95,14 +132,12 @@ function Carousel({
 
   React.useEffect(() => {
     if (!api) return
-    onSelect(api)
-    api.on("reInit", onSelect)
-    api.on("select", onSelect)
-
-    return () => {
-      api?.off("select", onSelect)
+    if (embyApiRef.current) {
+      // Emby resolves its engine from the element carrying `embyApi`. The items
+      // live on the scroller, so surface it on the root region too.
+      embyApiRef.current.embyApi = api
     }
-  }, [api, onSelect])
+  }, [api])
 
   return (
     <CarouselContext.Provider
@@ -119,6 +154,7 @@ function Carousel({
       }}
     >
       <div
+        ref={embyApiRef}
         onKeyDownCapture={handleKeyDown}
         className={cn("relative", className)}
         role="region"

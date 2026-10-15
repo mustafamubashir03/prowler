@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <style>
+    .ground { fill: #0a0a0a; }
+    .frame  { stroke: #ffffff; }
+    .eyes  { stroke: #ffffff; }
+    @media (prefers-color-scheme: light) {
+      .ground { fill: #ffffff; }
+      .frame  { stroke: #0a0a0a; }
+      .eyes  { stroke: #0a0a0a; }
+    }
+  </style>
+
+  <rect class="ground" width="32" height="32"/>
+
+  <!-- 16px-optimised geometry: thicker frame, thicker eyes, wider gap. -->
+  <path class="frame" d="M4 4 H25 L28 7 V28 H4 Z"
+        fill="none" stroke-width="3" stroke-linejoin="miter"/>
+
+  <g class="eyes" fill="none" stroke-width="6.4" stroke-linecap="square" stroke-linejoin="miter">
+    <path d="M7 16 H14"/>
+    <path d="M18 16 H25"/>
+    <path d="M21.5 11.5 V20.5"/>
+  </g>
+</svg>

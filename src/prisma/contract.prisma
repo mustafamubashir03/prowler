@@ -1,11 +1,70 @@
 // use prisma-8
 model User {
-  id        Int                        @id @default(autoincrement())
-  email     String                     @unique
+  id        Int                @id @default(autoincrement())
+  email     String             @unique
   username  String?
   name      String?
-  createdAt TimestamptzString          @default(now())
+  createdAt TimestamptzString  @default(now())
   updatedAt temporal.updatedAtString()
+}
+
+// A GitHub App installation belonging to a signed-in user.
+model GitHubInstallation {
+  id                   String               @id @default(cuid(2))
+  githubInstallationId String               @unique
+  targetId             String
+  targetLogin          String
+  targetType           String
+  repositorySelection  String
+  status               String               @default("ACTIVE")
+  userId               String?
+  user                 auth.AuthUser?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repositories         GitHubRepository[]
+  createdAt            TimestamptzString   @default(now())
+  updatedAt            temporal.updatedAtString()
+
+  @@index([userId])
+}
+
+model GitHubRepository {
+  id                 String              @id @default(cuid(2))
+  githubRepositoryId String              @unique
+  nodeId             String
+  owner              String
+  name               String
+  fullName           String
+  private            Boolean
+  defaultBranch      String
+  indexStatus        String              @default("NOT_INDEXED")
+  indexedAt          TimestamptzString?
+  installationId     String
+  installation       GitHubInstallation  @relation(fields: [installationId], references: [id], onDelete: Cascade)
+  pullRequestReviews PullRequestReview[]
+  createdAt          TimestamptzString   @default(now())
+  updatedAt          temporal.updatedAtString()
+
+  @@index([installationId])
+}
+
+model PullRequestReview {
+  id                 String            @id @default(cuid(2))
+  githubPrNumber     Int
+  githubRepositoryId String
+  repositoryId       String?
+  repository         GitHubRepository? @relation(fields: [repositoryId], references: [id], onDelete: SetNull)
+  owner              String
+  repoName           String
+  fullName           String
+  title              String
+  author             String
+  prUrl              String
+  status             String            @default("PENDING")
+  reviewBody         String?
+  createdAt          TimestamptzString   @default(now())
+  updatedAt          temporal.updatedAtString()
+
+  @@unique([githubRepositoryId, githubPrNumber])
+  @@index([repositoryId])
 }
 
 // Better Auth core schema. Better Auth has no Prisma ORM 8 adapter (Prisma 8 has
@@ -15,15 +74,16 @@ model User {
 // points Better Auth at the same namespace.
 namespace auth {
   model AuthUser {
-    id            String            @id
+    id            String               @id
     name          String
-    email         String            @unique
+    email         String               @unique
     emailVerified Boolean
     image         String?
-    createdAt     TimestamptzString @default(now())
-    updatedAt     TimestamptzString @default(now())
+    createdAt     TimestamptzString    @default(now())
+    updatedAt     TimestamptzString    @default(now())
     sessions      AuthSession[]
     accounts      AuthAccount[]
+    installations GitHubInstallation[]
 
     @@map("user")
   }
