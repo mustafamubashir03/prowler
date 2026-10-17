@@ -129,7 +129,9 @@ export async function generatePRReview(input: {
     codebaseContext: string;
 }) {
     const abortController = new AbortController();
-    const timeout = setTimeout(() => abortController.abort(), 5 * 60 * 1000);
+    // A 24-file PR sends tens of thousands of characters. The routed free model
+    // is slow on that, and a 5 minute ceiling aborted real runs mid-generation.
+    const timeout = setTimeout(() => abortController.abort(), 15 * 60 * 1000);
 
     try {
         for await (const message of query({
