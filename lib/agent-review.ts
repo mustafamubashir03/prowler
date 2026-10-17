@@ -129,9 +129,10 @@ export async function generatePRReview(input: {
     codebaseContext: string;
 }) {
     const abortController = new AbortController();
-    // A 24-file PR sends tens of thousands of characters. The routed free model
-    // is slow on that, and a 5 minute ceiling aborted real runs mid-generation.
-    const timeout = setTimeout(() => abortController.abort(), 15 * 60 * 1000);
+    // Measured: a 24-file PR prompt of ~34k characters took 802s on the routed
+// free model. A 12k diff is faster, and the ceiling leaves real headroom rather
+// than a few seconds either side of the limit.
+const timeout = setTimeout(() => abortController.abort(), 20 * 60 * 1000);
 
     try {
         for await (const message of query({
