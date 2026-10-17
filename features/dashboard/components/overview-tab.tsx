@@ -9,7 +9,36 @@ type User = {
 
 async function fetchOverview() {
     const response = await fetch("/api/overview");
-    return response.json();
+
+    if (!response.ok) {
+        throw new Error("Failed to load overview");
+    }
+
+    return response.json() as Promise<{
+        stats: {
+            installations: number;
+            repositories: number;
+            indexedRepositories: number;
+            indexingRepositories: number;
+            failedRepositories: number;
+            pullRequestReviews: number;
+            completedReviews: number;
+        };
+        recentReviews: {
+            id: string;
+            fullName: string;
+            githubPrNumber: number;
+            title: string;
+            status: string;
+            updatedAt: string;
+            prUrl: string;
+        }[];
+        recentRepositories: {
+            id: string;
+            fullName: string;
+            indexedAt: string | null;
+        }[];
+    }>;
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -24,32 +53,52 @@ function StatCell({
     label,
     value,
     hint,
+    accent = false,
 }: {
     label: string;
     value: number;
     hint?: string;
+    accent?: boolean;
 }) {
     return (
-        <div className="flex flex-col gap-1 border border-border bg-card p-4">
+        <div
+            className={`flex flex-col gap-1 border border-border bg-card p-4 transition-colors hover:bg-accent-ink/6 ${
+                accent ? "border-t-2 border-t-primary" : ""
+            }`}
+        >
             <SectionLabel>{label}</SectionLabel>
-            <p className="font-mono text-2xl leading-none tabular-nums">{value}</p>
-            {hint && (
-                <p className="text-xs text-muted-foreground">{hint}</p>
-            )}
+            <p
+                className={`font-mono text-2xl leading-none tabular-nums ${
+                    accent ? "text-accent-ink" : ""
+                }`}
+            >
+                {value}
+            </p>
+            {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
         </div>
     );
 }
 
 export function OverviewTab({ user }: { user: User }) {
-    const { data, isLoading } = useQuery({
+    const { data, isLoading, isError } = useQuery({
         queryKey: ["overview"],
         queryFn: fetchOverview,
+        // Indexing runs change these counts, so poll only while work is in
+        // flight. Otherwise the default staleTime keeps the panel instant.
+        refetchInterval: (query) => {
+            const indexing =
+                query.state.data?.stats.indexingRepositories ?? 0;
+
+            return indexing > 0 ? 3000 : false;
+        },
     });
 
     const stats = data?.stats ?? {
         installations: 0,
         repositories: 0,
         indexedRepositories: 0,
+        indexingRepositories: 0,
+        failedRepositories: 0,
         pullRequestReviews: 0,
         completedReviews: 0,
     };
@@ -73,8 +122,36 @@ export function OverviewTab({ user }: { user: User }) {
                 <p className="px-5 py-6 text-sm text-muted-foreground">
                     Loading overview...
                 </p>
+            ) : isError ? (
+                <p className="px-5 py-6 text-sm text-destructive">
+                    Could not load overview.
+                </p>
             ) : (
                 <>
+                    {stats.indexingRepositories > 0 && (
+                        <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-5 py-3">
+                            <span
+                                aria-hidden
+                                className="size-1.5 animate-pulse bg-accent-ink motion-reduce:animate-none"
+                            />
+                            <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                                Indexing {stats.indexingRepositories}{" "}
+                                {stats.indexingRepositories === 1
+                                    ? "repository"
+                                    : "repositories"}
+                            </p>
+                        </div>
+                    )}
+
+                    {stats.failedRepositories > 0 && (
+                        <div className="flex items-center gap-2 border-b border-border bg-destructive/10 px-5 py-3">
+                            <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-destructive">
+                                {stats.failedRepositories} failed to index · retry
+                                from repositories
+                            </p>
+                        </div>
+                    )}
+
                     <div className="grid grid-cols-2 gap-px border-b border-border bg-border lg:grid-cols-4">
                         <StatCell
                             label="Installations"
@@ -90,6 +167,7 @@ export function OverviewTab({ user }: { user: User }) {
                             label="Indexed"
                             value={stats.indexedRepositories}
                             hint="Ready to review"
+                            accent
                         />
                         <StatCell
                             label="Reviews"
@@ -130,7 +208,7 @@ export function OverviewTab({ user }: { user: User }) {
                                                     href={review.prUrl}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="block px-5 py-3 hover:bg-accent/40"
+                                                    className="block px-5 py-3 hover:bg-accent-ink/6"
                                                 >
                                                     <p className="font-mono text-xs text-muted-foreground">
                                                         {review.fullName} #

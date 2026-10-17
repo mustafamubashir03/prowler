@@ -29,6 +29,10 @@ export async function GET(request: Request) {
     return Response.json({ repositories: [], nextCursor: null });
   }
 
+  const targetLoginByInstallationId = new Map(
+    installations.map((installation) => [installation.id, installation.targetLogin]),
+  );
+
   let query = db.orm.public.GitHubRepository.where((fields) =>
     fields.installationId.in(installationIds),
   );
@@ -66,6 +70,9 @@ if (cursor) {
       indexStatus: repository.indexStatus,
       indexedAt: repository.indexedAt,
       installationId: repository.installationId,
+      installation: {
+        targetLogin: targetLoginByInstallationId.get(repository.installationId) ?? null,
+      },
     })),
     nextCursor: hasMore ? items[items.length - 1]?.fullName ?? null : null,
   });

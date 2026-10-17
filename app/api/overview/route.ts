@@ -23,6 +23,8 @@ export async function GET() {
                 installations: 0,
                 repositories: 0,
                 indexedRepositories: 0,
+                indexingRepositories: 0,
+                failedRepositories: 0,
                 pullRequestReviews: 0,
                 completedReviews: 0,
             },
@@ -54,6 +56,12 @@ export async function GET() {
             repositories: repositories.length,
             indexedRepositories: repositories.filter(
                 (repository) => repository.indexStatus === "INDEXED",
+            ).length,
+            indexingRepositories: repositories.filter(
+                (repository) => repository.indexStatus === "INDEXING",
+            ).length,
+            failedRepositories: repositories.filter(
+                (repository) => repository.indexStatus === "FAILED",
             ).length,
             pullRequestReviews: reviews.length,
             completedReviews: reviews.filter((review) => review.status === "COMPLETED")
