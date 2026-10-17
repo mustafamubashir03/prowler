@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from "crypto";
 
 import { db } from "@/src/prisma/db";
 import { syncInstallation } from "@/features/auth/github/lib/sync-installation";
+import { inngest } from "@/inngest/client";
 
 function isValidSignature(body: string, signature: string) {
     const secret = process.env.GITHUB_WEBHOOK_SECRET;
@@ -62,6 +63,33 @@ export async function POST(request: Request) {
         event === "installation_repositories"
     ) {
         await syncInstallation(githubInstallationId);
+    }
+    if (event === "pull_request") {
+        const action = payload.action;
+
+        if (["opened", "synchronize", "reopened"].includes(action)) {
+            const headSha = payload.pull_request.head?.sha;
+
+            await inngest.send({
+                // GitHub redelivers webhooks. Keying on repo + PR + head sha means
+                // a redelivery is a no-op, while a genuine new push still reviews.
+                id: `pr-${payload.repository.id}-${payload.pull_request.number}-${
+                    headSha ?? action
+                }`,
+                name: "pr/review.requested",
+                data: {
+                    installationId,
+                    owner: payload.repository.owner.login,
+                    repo: payload.repository.name,
+                    prNumber: payload.pull_request.number,
+                    prTitle: payload.pull_request.title,
+                    prAuthor: payload.pull_request.user.login,
+                    prUrl: payload.pull_request.html_url,
+                    githubRepositoryId: String(payload.repository.id),
+                    prBody: payload.pull_request.body ?? "",
+                },
+            });
+        }
     }
 
     return Response.json({ ok: true });
