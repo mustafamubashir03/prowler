@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { ExternalLink } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -40,16 +41,31 @@ export function SettingsTab({
     installations: Installation[];
 }) {
     const router = useRouter();
+    const queryClient = useQueryClient();
     const [pending, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
+    const [confirming, setConfirming] = useState<string | null>(null);
 
     const disconnect = (githubInstallationId: string, label: string) => {
         setError(null);
         startTransition(async () => {
             try {
                 await deleteInstallation(githubInstallationId);
+
+                // Counts and lists derived from the installation are already in
+                // the query cache, so drop them instead of refetching on mount.
+                await Promise.all([
+                    queryClient.invalidateQueries({ queryKey: ["overview"] }),
+                    queryClient.invalidateQueries({ queryKey: ["repositories"] }),
+                    queryClient.invalidateQueries({
+                        queryKey: ["pull-requests"],
+                    }),
+                ]);
+
+                setConfirming(null);
                 router.refresh();
             } catch {
+                setConfirming(null);
                 setError(`Could not disconnect ${label}. Try again.`);
             }
         });
@@ -155,20 +171,47 @@ export function SettingsTab({
                                     >
                                         <ExternalLink className="size-4" />
                                     </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="rounded-none"
-                                        disabled={pending}
-                                        onClick={() =>
-                                            disconnect(
-                                                installation.githubInstallationId,
-                                                installation.targetLogin,
-                                            )
-                                        }
-                                    >
-                                        Disconnect
-                                    </Button>
+                                    {confirming === installation.githubInstallationId ? (
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
+                                                Remove access?
+                                            </span>
+                                            <Button
+                                                size="sm"
+                                                variant="destructive"
+                                                disabled={pending}
+                                                onClick={() =>
+                                                    disconnect(
+                                                        installation.githubInstallationId,
+                                                        installation.targetLogin,
+                                                    )
+                                                }
+                                            >
+                                                Confirm
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                disabled={pending}
+                                                onClick={() => setConfirming(null)}
+                                            >
+                                                Cancel
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            disabled={pending}
+                                            onClick={() =>
+                                                setConfirming(
+                                                    installation.githubInstallationId,
+                                                )
+                                            }
+                                        >
+                                            Disconnect
+                                        </Button>
+                                    )}
                                 </div>
                             </li>
                         ))}

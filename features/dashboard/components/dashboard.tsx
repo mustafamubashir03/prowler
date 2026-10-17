@@ -66,7 +66,7 @@ export function Dashboard({
                     <Breadcrumb>
                         <BreadcrumbList>
                             <BreadcrumbItem>
-                                <BreadcrumbPage className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                                <BreadcrumbPage className="font-mono text-xs uppercase tracking-[0.14em] text-accent-ink">
                                     {tabLabels[activeTab]}
                                 </BreadcrumbPage>
                             </BreadcrumbItem>

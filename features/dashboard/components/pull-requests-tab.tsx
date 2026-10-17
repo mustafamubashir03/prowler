@@ -45,6 +45,7 @@ export function PullRequestsTab() {
     const { data, isLoading, isError } = useQuery({
         queryKey: ["pull-requests"],
         queryFn: fetchReviews,
+        placeholderData: (previous) => previous,
     });
 
     const reviews = data?.reviews ?? [];
@@ -55,9 +56,14 @@ export function PullRequestsTab() {
                 <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                     Pull requests
                 </p>
-                <h2 className="mt-2 text-xl font-semibold tracking-tight">
-                    Review activity
-                </h2>
+                <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
+                    <h2 className="text-xl font-semibold tracking-tight">
+                        Review activity
+                    </h2>
+                    <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
+                        {reviews.length} shown
+                    </span>
+                </div>
                 <p className="mt-1 text-sm text-muted-foreground">
                     Every review Prowler posts, with its current status.
                 </p>
@@ -96,7 +102,7 @@ export function PullRequestsTab() {
                                 href={review.prUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="block px-5 py-4 transition-colors hover:bg-accent/40"
+                                className="block px-5 py-4 transition-colors hover:bg-accent-ink/6"
                             >
                                 <div className="flex flex-wrap items-start justify-between gap-3">
                                     <div className="min-w-0">

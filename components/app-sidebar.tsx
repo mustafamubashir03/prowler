@@ -89,7 +89,7 @@ export function AppSidebar({
                                     <SidebarMenuButton
                                         isActive={activeTab === item.id}
                                         onClick={() => onTabChange(item.id)}
-                                        className="rounded-none"
+                                        className="rounded-none border-l-2 border-transparent data-active:border-l-primary data-active:bg-primary/10 data-active:text-accent-ink data-active:[&_svg]:text-accent-ink"
                                     >
                                         <HugeiconsIcon
                                             icon={item.icon}
