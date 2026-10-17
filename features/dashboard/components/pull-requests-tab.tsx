@@ -1,136 +1,206 @@
 "use client";
 
+
+import { ReviewMarkdown } from "@/components/review-markdown";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { ArrowDown01Icon, LinkSquare02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
-import { Skeleton } from "@/components/ui/skeleton";
-
-type Review = {
-    id: string;
-    githubPrNumber: number;
-    fullName: string;
-    title: string;
-    author: string;
-    prUrl: string;
-    status: string;
-    reviewBody: string | null;
-    updatedAt: string;
+type PullRequestReview = {
+  id: string;
+  githubPrNumber: number;
+  fullName: string;
+  title: string;
+  author: string;
+  prUrl: string;
+  status: string;
+  reviewBody: string | null;
+  updatedAt: string;
 };
 
-async function fetchReviews() {
-    const response = await fetch("/api/pull-requests");
-    if (!response.ok) throw new Error("Failed to load pull requests");
-    return response.json() as Promise<{ reviews: Review[] }>;
+async function fetchPullRequests() {
+  const response = await fetch("/api/pull-requests");
+  return response.json();
 }
 
 function StatusBadge({ status }: { status: string }) {
-    const failed = status === "FAILED";
-    const done = status === "COMPLETED";
-
+  if (status === "COMPLETED") {
     return (
-        <span
-            className={`inline-flex items-center border px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.1em] ${
-                failed
-                    ? "border-destructive/40 text-destructive"
-                    : done
-                      ? "border-primary/40 text-primary"
-                      : "border-border text-muted-foreground"
-            }`}
-        >
-            {status.replace(/_/g, " ")}
-        </span>
+      <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs text-green-700 dark:bg-green-950 dark:text-green-300">
+        Reviewed
+      </span>
     );
+  }
+
+  if (status === "REVIEWING") {
+    return (
+      <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+        Reviewing...
+      </span>
+    );
+  }
+
+  if (status === "FAILED") {
+    return (
+      <span className="rounded-full bg-red-100 px-2.5 py-1 text-xs text-red-700 dark:bg-red-950 dark:text-red-300">
+        Failed
+      </span>
+    );
+  }
+
+  return (
+    <span className="rounded-full bg-muted px-2.5 py-1 text-xs">Pending</span>
+  );
+}
+
+function PullRequestCard({
+  review,
+  open,
+  onOpenChange,
+}: {
+  review: PullRequestReview;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const hasReview = Boolean(review.reviewBody);
+  const isReviewing = review.status === "REVIEWING";
+
+  return (
+    <Collapsible
+      open={open}
+      onOpenChange={onOpenChange}
+      className="rounded-2xl border bg-card"
+    >
+      <div className="flex items-start gap-3 p-4">
+        <CollapsibleTrigger className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-xl border bg-background transition-colors hover:bg-muted">
+          <HugeiconsIcon
+            icon={ArrowDown01Icon}
+            strokeWidth={2}
+            className={`size-4 transition-transform ${open ? "rotate-180" : ""}`}
+          />
+        </CollapsibleTrigger>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="font-medium">
+                {review.fullName}{" "}
+                <span className="text-muted-foreground">
+                  #{review.githubPrNumber}
+                </span>
+              </p>
+              <p className="mt-1 text-sm">{review.title}</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                by {review.author} · updated{" "}
+                {new Date(review.updatedAt).toLocaleString()}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <StatusBadge status={review.status} />
+              <a
+                href={review.prUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex h-7 items-center gap-1 rounded-2xl border border-border bg-background px-3 text-sm hover:bg-muted"
+              >
+                <HugeiconsIcon icon={LinkSquare02Icon} strokeWidth={2} />
+                GitHub
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <CollapsibleContent className="border-t px-4 pb-4 pt-3">
+        {hasReview ? (
+          <div className="rounded-xl border bg-muted/20 p-4">
+            <ReviewMarkdown
+              content={review.reviewBody!}
+              isAnimating={isReviewing}
+            />
+          </div>
+        ) : isReviewing ? (
+          <p className="text-sm text-muted-foreground">
+            Prowl is generating the review...
+          </p>
+        ) : review.status === "FAILED" ? (
+          <p className="text-sm text-destructive">
+            Review failed. Push a new commit or reopen the PR to retry.
+          </p>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            No review content yet.
+          </p>
+        )}
+      </CollapsibleContent>
+    </Collapsible>
+  );
 }
 
 export function PullRequestsTab() {
-    const { data, isLoading, isError } = useQuery({
-        queryKey: ["pull-requests"],
-        queryFn: fetchReviews,
-        placeholderData: (previous) => previous,
-    });
+  const { data, isLoading } = useQuery({
+    queryKey: ["pull-requests"],
+    queryFn: fetchPullRequests,
+    refetchInterval: (query) => {
+      const reviews = (query.state.data?.reviews ?? []) as PullRequestReview[];
+      const isReviewing = reviews.some((review) => review.status === "REVIEWING");
 
-    const reviews = data?.reviews ?? [];
+      return isReviewing ? 3000 : false;
+    },
+  });
 
-    return (
-        <div className="flex flex-col">
-            <div className="border-b border-border px-5 py-6">
-                <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                    Pull requests
-                </p>
-                <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
-                    <h2 className="text-xl font-semibold tracking-tight">
-                        Review activity
-                    </h2>
-                    <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
-                        {reviews.length} shown
-                    </span>
-                </div>
-                <p className="mt-1 text-sm text-muted-foreground">
-                    Every review Prowler posts, with its current status.
-                </p>
-            </div>
+  const reviews = (data?.reviews ?? []) as PullRequestReview[];
+  const [openIds, setOpenIds] = useState<Record<string, boolean>>({});
 
-            {isLoading ? (
-                <div className="flex flex-col">
-                    {Array.from({ length: 5 }).map((_, index) => (
-                        <Skeleton
-                            key={index}
-                            className="h-16 w-full rounded-none border-b border-border"
-                        />
-                    ))}
-                </div>
-            ) : isError ? (
-                <p className="px-5 py-6 text-sm text-destructive">
-                    Could not load reviews.
-                </p>
-            ) : reviews.length === 0 ? (
-                <div className="m-5 border border-dashed border-border bg-card px-6 py-12">
-                    {/* One wrapper owns the measure and the centering, so the
-                        heading and the body share a single centre line. */}
-                    <div className="mx-auto max-w-md text-center">
-                        <p className="font-medium">No reviews yet</p>
-                        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                            Open a pull request on a connected repository and
-                            Prowler will review it.
-                        </p>
-                    </div>
-                </div>
-            ) : (
-                <ul>
-                    {reviews.map((review) => (
-                        <li key={review.id} className="border-b border-border last:border-b-0">
-                            <a
-                                href={review.prUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="block px-5 py-4 transition-colors hover:bg-accent-ink/6"
-                            >
-                                <div className="flex flex-wrap items-start justify-between gap-3">
-                                    <div className="min-w-0">
-                                        <p className="font-mono text-xs text-muted-foreground">
-                                            {review.fullName} #
-                                            {review.githubPrNumber}
-                                        </p>
-                                        <h3 className="mt-1 text-sm font-medium">
-                                            {review.title}
-                                        </h3>
-                                        <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
-                                            {review.author} ·{" "}
-                                            {new Date(review.updatedAt).toLocaleString()}
-                                        </p>
-                                    </div>
-                                    <StatusBadge status={review.status} />
-                                </div>
+  function isOpen(review: PullRequestReview, index: number) {
+    if (review.id in openIds) {
+      return openIds[review.id];
+    }
 
-                                {review.reviewBody && (
-                                    <p className="mt-3 whitespace-pre-wrap border-l border-border pl-4 text-sm leading-relaxed text-muted-foreground">
-                                        {review.reviewBody}
-                                    </p>
-                                )}
-                            </a>
-                        </li>
-                    ))}
-                </ul>
-            )}
+    return review.status === "REVIEWING" || index === 0;
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div>
+        <h2 className="text-2xl font-semibold">Pull Requests</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Prowl reviews PRs automatically when they are opened or updated.
+        </p>
+      </div>
+
+      {isLoading ? (
+        <div className="rounded-2xl border bg-background p-8 text-center text-sm text-muted-foreground">
+          Loading pull requests...
         </div>
-    );
+      ) : reviews.length === 0 ? (
+        <div className="rounded-2xl border border-dashed bg-background p-12 text-center">
+          <p className="text-lg font-medium">No reviews yet</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Open a PR on a connected repo and Prowl will post a review here.
+          </p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {reviews.map((review, index) => (
+            <PullRequestCard
+              key={review.id}
+              review={review}
+              open={isOpen(review, index)}
+              onOpenChange={(open) =>
+                setOpenIds((current) => ({ ...current, [review.id]: open }))
+              }
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }

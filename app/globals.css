@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@source "../node_modeules/streamdown/dist/*.js";
+@source "../node_modeules/streamdown/code/dist/*.js";
+
 
 @custom-variant dark (&:is(.dark *));
 
@@ -213,10 +216,12 @@
     transition-duration: var(--t-press);
     transition-timing-function: var(--ease-out);
   }
+
   button:not(:disabled):active,
   [role="button"]:not(:disabled):active {
     transform: scale(0.97);
   }
+
   a[href] {
     text-decoration: underline;
     text-decoration-color: transparent;
@@ -226,6 +231,7 @@
     transition-duration: var(--t-hover);
     transition-timing-function: ease;
   }
+
   @media (hover: hover) and (pointer: fine) {
     a[href]:hover {
       text-decoration-color: currentColor;
@@ -234,6 +240,7 @@
 }
 
 @layer components {
+
   /* Display type: leading and tracking tighten as the size grows. */
   .display {
     font-family: var(--font-heading);
@@ -293,11 +300,9 @@
   /* Section separation is a tone step first, a hairline second. */
   .field {
     /* One tone step from the page in both themes. */
-    background-color: color-mix(
-      in oklch,
-      var(--background) 94%,
-      color-mix(in oklch, var(--foreground) 6%, var(--background))
-    );
+    background-color: color-mix(in oklch,
+        var(--background) 94%,
+        color-mix(in oklch, var(--foreground) 6%, var(--background)));
   }
 
   /* Faint line grid, used sparingly. */
@@ -312,6 +317,7 @@
   .corner-ticks {
     position: relative;
   }
+
   .corner-ticks::before,
   .corner-ticks::after {
     content: "";
@@ -320,12 +326,14 @@
     height: 9px;
     pointer-events: none;
   }
+
   .corner-ticks::before {
     top: -1px;
     left: -1px;
     border-top: 1px solid var(--ring);
     border-left: 1px solid var(--ring);
   }
+
   .corner-ticks::after {
     right: -1px;
     bottom: -1px;
@@ -335,10 +343,21 @@
 }
 
 @layer utilities {
-  .hairline-t { border-top: 1px solid var(--border); }
-  .hairline-b { border-bottom: 1px solid var(--border); }
-  .hairline-l { border-left: 1px solid var(--border); }
-  .hairline-r { border-right: 1px solid var(--border); }
+  .hairline-t {
+    border-top: 1px solid var(--border);
+  }
+
+  .hairline-b {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hairline-l {
+    border-left: 1px solid var(--border);
+  }
+
+  .hairline-r {
+    border-right: 1px solid var(--border);
+  }
 }
 
 /* ── Motion ─────────────────────────────────────────────────────────────
@@ -347,6 +366,7 @@
    script leaves the page fully visible rather than blank. */
 
 @media (prefers-reduced-motion: no-preference) {
+
   /* Signature move: the headline rises from behind its own baselines. */
   .js .lines .line {
     display: block;
@@ -354,6 +374,7 @@
     padding-bottom: 0.09em;
     margin-bottom: -0.09em;
   }
+
   .js .lines [data-line] {
     display: block;
     transform: translateY(105%);
@@ -378,6 +399,7 @@
       transform 860ms var(--ease-out);
     transition-delay: calc(var(--i, 0) * 70ms);
   }
+
   .js [data-reveal].is-in {
     opacity: 1;
     transform: none;
@@ -402,6 +424,7 @@
     .js .row-link:hover .row-arrow {
       transform: translateX(4px);
     }
+
     .row-arrow {
       transition: transform var(--t-hover) var(--ease-out);
     }
@@ -409,17 +432,27 @@
 }
 
 @keyframes line-up {
-  to { transform: none; }
+  to {
+    transform: none;
+  }
 }
+
 @keyframes rise {
-  to { opacity: 1; transform: none; }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
+
 @keyframes shutter-open {
-  to { clip-path: inset(0 0 0 0); }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
 }
 
 /* Reduced motion keeps opacity and colour, drops travel. */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
