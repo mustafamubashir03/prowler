@@ -26,6 +26,15 @@ const CALENDAR_QUERY = `query ($from: DateTime!, $to: DateTime!) {
 type Day = { date: string; contributionCount: number; color: string };
 
 /**
+ * The stored GitHub grant can no longer be refreshed. This is only fixable by
+ * the user signing in with GitHub again, so it is reported distinctly from a
+ * transient GitHub outage instead of being flattened into one generic message.
+ */
+class ReconnectRequiredError extends Error {
+    readonly code = "GITHUB_RECONNECT_REQUIRED";
+}
+
+/**
  * Better Auth stores the GitHub OAuth token on the account row. It expires, so
  * a 401 is retried once with a fresh token before giving up. Everything returned
  * here comes straight from GitHub: no values are derived or estimated.
@@ -63,9 +72,23 @@ async function githubToken(userId: string): Promise<string | null> {
     const payload = (await response.json()) as {
         access_token?: string;
         expires_in?: number;
+        error?: string;
+        error_description?: string;
     };
 
-    if (!payload.access_token) return null;
+    if (!payload.access_token) {
+        // GitHub answers 200 with an `error` field for OAuth failures rather
+        // than an error status, so a dead or revoked refresh token looks exactly
+        // like "no token". Only signing in with GitHub again can replace it, so
+        // say that instead of failing later with a generic message.
+        if (payload.error) {
+            throw new ReconnectRequiredError(
+                payload.error_description ?? payload.error,
+            );
+        }
+
+        return null;
+    }
 
     await db.orm.auth.AuthAccount.where({ id: account.id }).update({
         accessToken: payload.access_token,
@@ -203,12 +226,25 @@ export async function GET(request: Request) {
             days: calendar.days,
         });
     } catch (error) {
+        if (error instanceof ReconnectRequiredError) {
+            return Response.json(
+                {
+                    error: "Your GitHub connection has expired.",
+                    code: "GITHUB_RECONNECT_REQUIRED",
+                    reconnect: true,
+                },
+                { status: 401 },
+            );
+        }
+
         return Response.json(
             {
                 error:
                     error instanceof Error
                         ? error.message
                         : "Could not read GitHub contributions",
+                code: "GITHUB_UNAVAILABLE",
+                reconnect: false,
             },
             { status: 502 },
         );
