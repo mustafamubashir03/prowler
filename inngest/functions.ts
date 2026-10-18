@@ -3,7 +3,12 @@ import { inngest } from "./client";
 import { getInstallationOctokit } from "@/features/auth/github/lib/github-app";
 import { Octokit } from "@octokit/rest";
 import { embedTexts } from "@/lib/embeddings";
-import { index } from "@/lib/pinecone";
+import {
+    deleteVectorsById,
+    index,
+    listVectorIds,
+    repositoryVectorPrefix,
+} from "@/lib/pinecone";
 
 const CODE_EXTENSIONS = [
     ".ts",
@@ -70,13 +75,14 @@ function shouldSkipPath(path: string) {
 async function setIndexStatus(
     repositoryId: string,
     indexStatus: string,
-    indexedAt?: string | null,
+    options: { indexedAt?: string | null; indexError?: string | null } = {},
 ) {
     await db.orm.public.GitHubRepository.where({
         id: repositoryId,
     }).update({
         indexStatus,
-        ...(indexedAt === undefined ? {} : { indexedAt }),
+        ...(options.indexedAt === undefined ? {} : { indexedAt: options.indexedAt }),
+        ...(options.indexError === undefined ? {} : { indexError: options.indexError }),
     });
 }
 
@@ -89,12 +95,16 @@ export const indexRepository = inngest.createFunction(
                 event: "repo/index.requested",
             },
         ],
-        onFailure: async ({ event }) => {
+        onFailure: async ({ event, error }) => {
             const repositoryId = (event.data as { repositoryId?: string } | undefined)?.repositoryId;
             if (!repositoryId) return;
 
             try {
-                await setIndexStatus(repositoryId, "FAILED");
+                // indexedAt is deliberately left alone: a failed re-index must not
+                // erase the record that a previous run succeeded.
+                await setIndexStatus(repositoryId, "FAILED", {
+                    indexError: error?.message ?? "Indexing failed",
+                });
             } catch {
                 // The original failure is already reported; never mask it here.
             }
@@ -108,7 +118,9 @@ export const indexRepository = inngest.createFunction(
         }
 
         await step.run("mark-indexing", async () => {
-            await setIndexStatus(repositoryId, "INDEXING", null);
+            // The previous index is still valid and still serving retrieval until
+            // this run finishes, so indexedAt is kept and any prior error cleared.
+            await setIndexStatus(repositoryId, "INDEXING", { indexError: null });
         });
 
         const repo = await step.run("load-repository", async () => {
@@ -129,13 +141,10 @@ export const indexRepository = inngest.createFunction(
 
         if (!repo) throw new Error("Repo not found");
 
-        // Upsert alone leaves vectors behind: chunks for deleted files, and the
-        // high chunk indexes of files that shrank, would survive every re-index
-        // and skew retrieval. Clearing first keeps the namespace honest.
-        await step.run("clear-existing-vectors", async () => {
-            await index().deleteMany({ filter: { repositoryId } });
-        });
-
+        // Nothing below touches Pinecone until every file has been fetched,
+        // chunked and embedded. The previous index stays intact and serving
+        // retrieval for the whole of that phase, so a GitHub or embedding failure
+        // part way through costs nothing but a FAILED status.
         const files = await step.run("fetch-files", async () => {
             const installationOctokit = (await getInstallationOctokit(
                 Number(repo.installation.githubInstallationId),
@@ -163,13 +172,17 @@ export const indexRepository = inngest.createFunction(
             );
         });
 
-        let indexedChunks = 0;
         const batchSize = 20;
+
+        // Phase 1: fetch and chunk every file, writing nothing. The batch loop
+        // stays, because Inngest replays step-by-step and re-reading every file
+        // on each retry would be unbounded work.
+        const batches: { path: string; content: string }[][] = [];
 
         for (let i = 0; i < files.length; i += batchSize) {
             const batch = files.slice(i, i + batchSize);
 
-            const chunksIndexed = await step.run(`index-batch-${i / batchSize}`, async () => {
+            const contents = await step.run(`read-batch-${i / batchSize}`, async () => {
                 const installationOctokit = (await getInstallationOctokit(
                     Number(repo.installation.githubInstallationId),
                 )) as Octokit;
@@ -193,25 +206,39 @@ export const indexRepository = inngest.createFunction(
                     }),
                 );
 
-                const allChunks: { path: string, chunk: string, chunkIndex: number }[] = [];
+                return fileContents.filter((file): file is { path: string; content: string } =>
+                    file !== null,
+                );
+            });
 
-                for (const file of fileContents) {
-                    if (!file) continue;
-                    const chunks = chunkText(file.content);
-                    chunks.forEach((chunk, chunkIndex) => {
-                        allChunks.push({
-                            path: file.path,
-                            chunk,
-                            chunkIndex,
-                        });
+            batches.push(contents);
+        }
+
+        // Phase 2: everything is read, so the write phase cannot be interrupted
+        // by GitHub. Chunk ids stay {repositoryId}:{path}:{chunkIndex}, which is
+        // what makes a re-index idempotent: the same tree produces the same ids
+        // and upserts over itself.
+        const records: {
+            id: string;
+            values: number[];
+            metadata: Record<string, string | number>;
+        }[] = [];
+
+        for (let i = 0; i < batches.length; i++) {
+            const batchRecords = await step.run(`embed-batch-${i}`, async () => {
+                const allChunks: { path: string; chunk: string; chunkIndex: number }[] = [];
+
+                for (const file of batches[i]) {
+                    chunkText(file.content).forEach((chunk, chunkIndex) => {
+                        allChunks.push({ path: file.path, chunk, chunkIndex });
                     });
                 }
 
-                if (allChunks.length === 0) return 0;
+                if (allChunks.length === 0) return [];
 
                 const embeddings = await embedTexts(allChunks.map((chunk) => chunk.chunk));
 
-                const records = allChunks.map((item, position) => ({
+                return allChunks.map((item, position) => ({
                     id: `${repositoryId}:${item.path}:${item.chunkIndex}`,
                     values: embeddings.data[position].embedding,
                     metadata: {
@@ -222,24 +249,49 @@ export const indexRepository = inngest.createFunction(
                         content: item.chunk.slice(0, 1000),
                     },
                 }));
-
-                await index().upsert({ records });
-
-                return allChunks.length;
             });
 
-            indexedChunks += chunksIndexed;
+            records.push(...batchRecords);
         }
 
+        // Upsert first, prune second. Deleting the stale set before the new
+        // chunks are in would, on a failure, leave the repository with neither.
+        await step.run("upsert-chunks", async () => {
+            const writeBatch = 100;
+
+            for (let i = 0; i < records.length; i += writeBatch) {
+                await index().upsert({ records: records.slice(i, i + writeBatch) });
+            }
+        });
+
+        // Only ids under this repository's prefix that are absent from the new
+        // set get deleted: chunks of deleted files, and the high chunk indexes
+        // of files that shrank. Everything else is left exactly as it was.
+        const pruned = await step.run("prune-stale-chunks", async () => {
+            const keep = new Set(records.map((record) => record.id));
+            const existing = await listVectorIds(repositoryVectorPrefix(repositoryId));
+            const stale = existing.filter((id) => !keep.has(id));
+
+            if (stale.length > 0) {
+                await deleteVectorsById(stale);
+            }
+
+            return stale.length;
+        });
+
         await step.run("mark-indexed", async () => {
-            await setIndexStatus(repositoryId, "INDEXED", new Date().toISOString());
+            await setIndexStatus(repositoryId, "INDEXED", {
+                indexedAt: new Date().toISOString(),
+                indexError: null,
+            });
         });
 
         return {
             repositoryId,
             fullName: repo.repository.fullName,
             files: files.length,
-            chunks: indexedChunks,
+            chunks: records.length,
+            pruned,
         };
     },
 )
