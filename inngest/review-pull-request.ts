@@ -121,12 +121,12 @@ export const reviewPullRequest = inngest.createFunction(
             const diff = files
                 .map((file) => {
 const patch =
-                        file.patch?.slice(0, 2000) ??
+                        file.patch?.slice(0, 1500) ??
                         "(no text diff: binary or too large)";
                     return `--- ${file.filename} [${file.status}]\n\n${patch}`;
                 })
                 .join(`\n\n`)
-                .slice(0, 12000);
+                .slice(0, 8000);
 
             return { fileList, diff };
         });

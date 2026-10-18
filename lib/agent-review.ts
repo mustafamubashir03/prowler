@@ -152,7 +152,11 @@ const timeout = setTimeout(() => abortController.abort(), 20 * 60 * 1000);
                 systemPrompt: SYSTEM_PROMPT,
                 model,
                 env: routedEnv(model),
-                effort: "medium",
+                // Measured: the same payload took 29s once and 19 minutes later on
+            // the free endpoint, which queues. A single structured review does
+            // not need deep reasoning, and effort is the largest lever on
+            // latency for these models.
+            effort: "low",
                 maxTurns: 1,
                 maxBudgetUsd: 1,
                 // The review is answered from the prompt alone: the agent gets no
