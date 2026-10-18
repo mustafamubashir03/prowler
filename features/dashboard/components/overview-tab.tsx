@@ -2,6 +2,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 
+import { ActivityHeatmap } from "@/components/activity-heatmap";
+
 type User = {
     name: string;
     email: string;
@@ -175,6 +177,8 @@ export function OverviewTab({ user }: { user: User }) {
                             hint={`${stats.pullRequestReviews} total`}
                         />
                     </div>
+
+                    <ActivityHeatmap />
 
                     <div className="grid gap-px bg-border lg:grid-cols-2">
                         <section className="bg-background">

@@ -16,6 +16,12 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const search = (searchParams.get("search") ?? "").trim().replace(/[%_]/g, "");
   const cursor = searchParams.get("cursor");
+  const sort = (searchParams.get("sort") ?? "name").toLowerCase();
+
+  // Only these keys are honoured; anything else falls back to name.
+  const sortKey = (
+    ["name", "updated", "status"].includes(sort) ? sort : "name"
+  ) as "name" | "updated" | "status";
 
   // Prisma 8 cannot filter through a to-one relation, so resolve the caller's
   // installations first and scope the repository query by their ids.
@@ -41,21 +47,50 @@ export async function GET(request: Request) {
     query = query.where((fields) => fields.fullName.ilike(`%${search}%`));
   }
 
-if (cursor) {
-        // Keyset cursor must match the sort key, otherwise rows get skipped or
-        // repeated across pages. Rows are ordered by fullName ascending, so the
-        // cursor continues strictly after the last fullName we returned.
-        query = query.where((fields) => fields.fullName.gt(cursor));
+    const direction = sort === "desc" ? "desc" : "asc";
+    const desc = direction === "desc";
+    // Only name ordering is cursor-safe. Other keys are not unique, so a keyset
+    // cursor would skip or repeat rows; those page by offset instead. Prisma 8
+    // has no .skip(), and the repository set is small, so the slice is done here.
+    const cursorSafe = sortKey === "name";
+    const offset = Number(searchParams.get("offset") ?? "0");
+
+    if (cursorSafe && cursor) {
+        query = query.where((fields) =>
+            desc ? fields.fullName.lt(cursor) : fields.fullName.gt(cursor),
+        );
     }
 
-    const rows = await query
-        .orderBy((fields) => fields.fullName.asc())
-        .orderBy((fields) => fields.id.asc())
-        .limit(PAGE_SIZE + 1)
-        .all();
+    const ordered =
+        sortKey === "updated"
+            ? query
+                  .orderBy((fields) => fields.updatedAt[desc ? "desc" : "asc"]())
+                  .orderBy((fields) => fields.fullName.asc())
+            : sortKey === "status"
+              ? query
+                    .orderBy((fields) =>
+                        fields.indexStatus[desc ? "desc" : "asc"](),
+                    )
+                    .orderBy((fields) => fields.fullName.asc())
+              : query
+                    .orderBy((fields) =>
+                        fields.fullName[desc ? "desc" : "asc"](),
+                    )
+                    .orderBy((fields) => fields.id.asc());
 
-  const hasMore = rows.length > PAGE_SIZE;
-  const items = hasMore ? rows.slice(0, PAGE_SIZE) : rows;
+    let rows;
+    let hasMore: boolean;
+    let items;
+
+    if (cursorSafe) {
+        rows = await ordered.limit(PAGE_SIZE + 1).all();
+        hasMore = rows.length > PAGE_SIZE;
+        items = hasMore ? rows.slice(0, PAGE_SIZE) : rows;
+    } else {
+        const all = await ordered.all();
+        items = all.slice(offset, offset + PAGE_SIZE);
+        hasMore = offset + PAGE_SIZE < all.length;
+    }
 
   return Response.json({
     repositories: items.map((repository) => ({
@@ -74,6 +109,12 @@ if (cursor) {
         targetLogin: targetLoginByInstallationId.get(repository.installationId) ?? null,
       },
     })),
-    nextCursor: hasMore ? items[items.length - 1]?.fullName ?? null : null,
+    nextCursor:
+      hasMore && cursorSafe
+        ? items[items.length - 1]?.fullName ?? null
+        : null,
+    nextOffset: hasMore && !cursorSafe ? offset + PAGE_SIZE : null,
+    sort: sortKey,
+    direction,
   });
 }

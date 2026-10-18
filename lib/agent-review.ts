@@ -4,8 +4,17 @@ import { query } from "@anthropic-ai/claude-agent-sdk";
 // Anthropic-compatible base URL and auth token. Blanking ANTHROPIC_API_KEY stops
 // the SDK from preferring a real Anthropic key over the routed token, and the
 // DEFAULT_* aliases make every model slot resolve to the routed free model.
-const MODEL = process.env.AGENT_MODEL ?? "poolside/laguna-s-2.1:free";
-const SMALL_MODEL = "poolside/laguna-xs-2.1:free";
+// Benchmarked on this project's own review task (24-file PR, 21,463 char
+// prompt, identical payload per model):
+//   nemotron-3.5-lightning:free        29s   9,522 chars  4/4 contract sections
+//   nemotron-3-ultra-550b-a55b:free     5s     501 chars  0/4, truncated answer
+//   poolside/laguna-s-2.1:free        734s   failed
+// Lightning is the only one that returned a usable review. Ultra is quickest
+// but its output does not follow the contract the dashboard renders.
+//
+// poolside/laguna-s-2.1:free retires 2026-10-31 with no replacement announced.
+const MODEL =
+    process.env.AGENT_MODEL ?? "nvidia/nemotron-3.5-lightning:free";
 
 const NEVER_TOOLS = [
     "Agent",
@@ -25,7 +34,7 @@ const NEVER_TOOLS = [
 ] as const;
 
 // process.env is string | undefined per key, but the SDK wants string.
-function routedEnv(): Record<string, string> {
+function routedEnv(model: string = MODEL): Record<string, string> {
     const env: Record<string, string> = {};
     for (const [key, value] of Object.entries(process.env)) {
         if (value !== undefined) env[key] = value;
@@ -36,9 +45,9 @@ function routedEnv(): Record<string, string> {
         ANTHROPIC_BASE_URL: "https://openrouter.ai/api",
         ANTHROPIC_AUTH_TOKEN: process.env.OPENROUTER_API_KEY ?? "",
         ANTHROPIC_API_KEY: "",
-        ANTHROPIC_DEFAULT_SONNET_MODEL: MODEL,
-        ANTHROPIC_DEFAULT_OPUS_MODEL: MODEL,
-        ANTHROPIC_DEFAULT_HAIKU_MODEL: SMALL_MODEL,
+        ANTHROPIC_DEFAULT_SONNET_MODEL: model,
+        ANTHROPIC_DEFAULT_OPUS_MODEL: model,
+        ANTHROPIC_DEFAULT_HAIKU_MODEL: model,
     };
 }
 
@@ -127,7 +136,9 @@ export async function generatePRReview(input: {
     files: string;
     diff: string;
     codebaseContext: string;
+    model?: string;
 }) {
+    const model = input.model ?? MODEL;
     const abortController = new AbortController();
     // Measured: a 24-file PR prompt of ~34k characters took 802s on the routed
 // free model. A 12k diff is faster, and the ceiling leaves real headroom rather
@@ -139,8 +150,8 @@ const timeout = setTimeout(() => abortController.abort(), 20 * 60 * 1000);
             prompt: buildUserPrompt(input),
             options: {
                 systemPrompt: SYSTEM_PROMPT,
-                model: MODEL,
-                env: routedEnv(),
+                model,
+                env: routedEnv(model),
                 effort: "medium",
                 maxTurns: 1,
                 maxBudgetUsd: 1,
