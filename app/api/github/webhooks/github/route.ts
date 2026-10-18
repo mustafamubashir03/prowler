@@ -51,7 +51,10 @@ export async function POST(request: Request) {
         }).deleteAll();
     }
 
-    if (event === "installation" && payload.action === "suspended") {
+    // GitHub's documented action type is "suspend", not "suspended". Matching
+    // the latter meant this branch never ran and a suspended installation stayed
+    // ACTIVE in the database, so reviews kept running against a revoked grant.
+    if (event === "installation" && payload.action === "suspend") {
         await db.orm.public.GitHubInstallation.where({
             githubInstallationId: String(githubInstallationId),
         }).updateAll({ status: "SUSPENDED" });
