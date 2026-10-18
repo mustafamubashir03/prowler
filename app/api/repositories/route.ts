@@ -16,11 +16,20 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const search = (searchParams.get("search") ?? "").trim().replace(/[%_]/g, "");
   const cursor = searchParams.get("cursor");
-  const sort = (searchParams.get("sort") ?? "name").toLowerCase();
+
+  // The client sends a combined "key:direction" token, for example
+  // "updated:desc". Splitting it here means one contract on both sides; the
+  // previous check compared the whole token against the key list, so every
+  // option silently fell back to name ascending.
+  const [rawKey = "name", rawDir = "asc"] = (
+    searchParams.get("sort") ?? "name:asc"
+  )
+    .toLowerCase()
+    .split(":");
 
   // Only these keys are honoured; anything else falls back to name.
   const sortKey = (
-    ["name", "updated", "status"].includes(sort) ? sort : "name"
+    ["name", "updated", "status"].includes(rawKey) ? rawKey : "name"
   ) as "name" | "updated" | "status";
 
   // Prisma 8 cannot filter through a to-one relation, so resolve the caller's
@@ -47,7 +56,7 @@ export async function GET(request: Request) {
     query = query.where((fields) => fields.fullName.ilike(`%${search}%`));
   }
 
-    const direction = sort === "desc" ? "desc" : "asc";
+    const direction = rawDir === "desc" ? "desc" : "asc";
     const desc = direction === "desc";
     // Only name ordering is cursor-safe. Other keys are not unique, so a keyset
     // cursor would skip or repeat rows; those page by offset instead. Prisma 8

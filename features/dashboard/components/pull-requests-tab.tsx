@@ -1,5 +1,9 @@
 "use client";
 
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowDown01Icon, LinkSquare02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 
 import { ReviewMarkdown } from "@/components/review-markdown";
 import {
@@ -7,10 +11,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ArrowDown01Icon, LinkSquare02Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
 
 type PullRequestReview = {
   id: string;
@@ -26,36 +26,45 @@ type PullRequestReview = {
 
 async function fetchPullRequests() {
   const response = await fetch("/api/pull-requests");
-  return response.json();
+
+  if (!response.ok) {
+    throw new Error("Failed to load pull requests");
+  }
+
+  return response.json() as Promise<{ reviews: PullRequestReview[] }>;
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+      {children}
+    </p>
+  );
 }
 
 function StatusBadge({ status }: { status: string }) {
-  if (status === "COMPLETED") {
-    return (
-      <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs text-green-700 dark:bg-green-950 dark:text-green-300">
-        Reviewed
-      </span>
-    );
-  }
-
-  if (status === "REVIEWING") {
-    return (
-      <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs text-blue-700 dark:bg-blue-950 dark:text-blue-300">
-        Reviewing...
-      </span>
-    );
-  }
-
-  if (status === "FAILED") {
-    return (
-      <span className="rounded-full bg-red-100 px-2.5 py-1 text-xs text-red-700 dark:bg-red-950 dark:text-red-300">
-        Failed
-      </span>
-    );
-  }
+  const completed = status === "COMPLETED";
+  const failed = status === "FAILED";
+  const reviewing = status === "REVIEWING";
 
   return (
-    <span className="rounded-full bg-muted px-2.5 py-1 text-xs">Pending</span>
+    <span
+      className={`inline-flex items-center gap-1.5 border px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.1em] ${
+        completed
+          ? "border-primary/40 text-accent-ink"
+          : failed
+            ? "border-destructive/40 text-destructive"
+            : "border-border text-muted-foreground"
+      }`}
+    >
+      {reviewing && (
+        <span
+          aria-hidden
+          className="size-1.5 animate-pulse bg-current motion-reduce:animate-none"
+        />
+      )}
+      {status.replace(/_/g, " ")}
+    </span>
   );
 }
 
@@ -75,10 +84,13 @@ function PullRequestCard({
     <Collapsible
       open={open}
       onOpenChange={onOpenChange}
-      className="rounded-2xl border bg-card"
+      className="border-b border-border"
     >
-      <div className="flex items-start gap-3 p-4">
-        <CollapsibleTrigger className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-xl border bg-background transition-colors hover:bg-muted">
+      <div className="flex items-start gap-3 px-3 py-4 sm:px-5">
+        <CollapsibleTrigger
+          aria-label={open ? "Collapse review" : "Expand review"}
+          className="mt-0.5 flex size-8 shrink-0 items-center justify-center border border-border bg-background transition-colors hover:bg-accent-ink/6"
+        >
           <HugeiconsIcon
             icon={ArrowDown01Icon}
             strokeWidth={2}
@@ -89,15 +101,12 @@ function PullRequestCard({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="font-medium">
-                {review.fullName}{" "}
-                <span className="text-muted-foreground">
-                  #{review.githubPrNumber}
-                </span>
+              <p className="font-mono text-xs text-muted-foreground">
+                {review.fullName} #{review.githubPrNumber}
               </p>
-              <p className="mt-1 text-sm">{review.title}</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                by {review.author} · updated{" "}
+              <p className="mt-1 text-sm font-medium">{review.title}</p>
+              <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
+                {review.author} ·{" "}
                 {new Date(review.updatedAt).toLocaleString()}
               </p>
             </div>
@@ -108,9 +117,13 @@ function PullRequestCard({
                 href={review.prUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex h-7 items-center gap-1 rounded-2xl border border-border bg-background px-3 text-sm hover:bg-muted"
+                className="inline-flex h-7 items-center gap-1 border border-border bg-background px-2.5 font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:bg-accent-ink/6 hover:text-foreground"
               >
-                <HugeiconsIcon icon={LinkSquare02Icon} strokeWidth={2} />
+                <HugeiconsIcon
+                  icon={LinkSquare02Icon}
+                  strokeWidth={2}
+                  className="size-3.5"
+                />
                 GitHub
               </a>
             </div>
@@ -118,9 +131,11 @@ function PullRequestCard({
         </div>
       </div>
 
-      <CollapsibleContent className="border-t px-4 pb-4 pt-3">
+      <CollapsibleContent className="border-t border-border px-3 pb-5 pt-4 sm:px-5">
         {hasReview ? (
-          <div className="rounded-xl border bg-muted/20 p-4">
+          // A measure keeps the prose readable instead of running the full width
+          // of a wide monitor.
+          <div className="max-w-[78ch] border-l border-border pl-4">
             <ReviewMarkdown
               content={review.reviewBody!}
               isAnimating={isReviewing}
@@ -128,16 +143,14 @@ function PullRequestCard({
           </div>
         ) : isReviewing ? (
           <p className="text-sm text-muted-foreground">
-            Prowl is generating the review...
+            Prowler is generating the review...
           </p>
         ) : review.status === "FAILED" ? (
           <p className="text-sm text-destructive">
             Review failed. Push a new commit or reopen the PR to retry.
           </p>
         ) : (
-          <p className="text-sm text-muted-foreground">
-            No review content yet.
-          </p>
+          <p className="text-sm text-muted-foreground">No review content yet.</p>
         )}
       </CollapsibleContent>
     </Collapsible>
@@ -145,14 +158,16 @@ function PullRequestCard({
 }
 
 export function PullRequestsTab() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["pull-requests"],
     queryFn: fetchPullRequests,
+    placeholderData: (previous) => previous,
+    // Only poll while a review is actually being generated.
     refetchInterval: (query) => {
       const reviews = (query.state.data?.reviews ?? []) as PullRequestReview[];
-      const isReviewing = reviews.some((review) => review.status === "REVIEWING");
-
-      return isReviewing ? 3000 : false;
+      return reviews.some((review) => review.status === "REVIEWING")
+        ? 3000
+        : false;
     },
   });
 
@@ -168,27 +183,45 @@ export function PullRequestsTab() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div>
-        <h2 className="text-2xl font-semibold">Pull Requests</h2>
+    <div className="flex flex-col">
+      <div className="border-b border-border px-5 py-6">
+        <SectionLabel>Pull requests</SectionLabel>
+        <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
+          <h2 className="text-xl font-semibold tracking-tight">Review activity</h2>
+          <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
+            {reviews.length} shown
+          </span>
+        </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          Prowl reviews PRs automatically when they are opened or updated.
+          Prowler reviews PRs automatically when they are opened or updated.
         </p>
       </div>
 
       {isLoading ? (
-        <div className="rounded-2xl border bg-background p-8 text-center text-sm text-muted-foreground">
-          Loading pull requests...
+        <div className="flex flex-col">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div
+              key={index}
+              className="h-16 w-full border-b border-border"
+              aria-hidden
+            />
+          ))}
         </div>
+      ) : isError ? (
+        <p className="px-5 py-6 text-sm text-destructive">
+          Could not load reviews.
+        </p>
       ) : reviews.length === 0 ? (
-        <div className="rounded-2xl border border-dashed bg-background p-12 text-center">
-          <p className="text-lg font-medium">No reviews yet</p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Open a PR on a connected repo and Prowl will post a review here.
-          </p>
+        <div className="m-5 border border-dashed border-border bg-card px-6 py-12">
+          <div className="mx-auto max-w-md text-center">
+            <p className="font-medium">No reviews yet</p>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              Open a PR on a connected repo and Prowler will post a review here.
+            </p>
+          </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col">
           {reviews.map((review, index) => (
             <PullRequestCard
               key={review.id}
