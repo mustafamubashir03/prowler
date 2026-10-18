@@ -28,16 +28,23 @@ import { type Octokit } from "@octokit/rest";
 /** Enough lines around a hit to judge it, without flooding the context. */
 const READ_WINDOW_LINES = 400;
 
+/**
+ * Every tool is closed over this context and no tool accepts a repository id or
+ * namespace as an argument, so the model cannot redirect a search to a
+ * repository the caller has not already proved they own. The values are filled
+ * in server-side from the URL, after assertUserCanAccessRepository.
+ */
 export type RepoToolContext = {
     installationId: number;
     owner: string;
     repo: string;
     defaultBranch: string;
     /**
-     * The namespace every tool is confined to. On main the chunk ids are keyed
-     * on the local repository id, so this is the row id, not the GitHub id.
+     * The vector namespace. Chunks are keyed on GitHub's numeric repository id,
+     * which survives a reinstall, a rename and a transfer, so this must be the
+     * numeric id and never the locally generated row id.
      */
-    namespace: string;
+    githubRepositoryId: string;
 };
 
 type RepoTool =
@@ -195,7 +202,7 @@ export function repoTools(context: RepoToolContext): RepoTool[] {
                 vector: embedding.embedding,
                 topK: 8,
                 includeMetadata: true,
-                filter: { repositoryId: context.namespace },
+                filter: { githubRepositoryId: context.githubRepositoryId },
             });
 
             if (results.matches.length === 0) {
@@ -224,11 +231,11 @@ export function repoTools(context: RepoToolContext): RepoTool[] {
 
 export function toolContextForRepository(
     repository: {
-        id: string;
         installationId: string;
         owner: string;
         name: string;
         defaultBranch: string;
+        githubRepositoryId: string;
     },
 ): Promise<RepoToolContext> {
     return installationIdForRepository(repository.installationId).then(
@@ -237,7 +244,7 @@ export function toolContextForRepository(
             owner: repository.owner,
             repo: repository.name,
             defaultBranch: repository.defaultBranch,
-            namespace: repository.id,
+            githubRepositoryId: repository.githubRepositoryId,
         }),
     );
 }
