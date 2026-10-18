@@ -34,8 +34,29 @@ const MONTHS = [
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
-// GitHub renders its own scale with these exact values.
-const LEGEND = ["#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39"];
+// GitHub returns the light-theme hex for each day. Both of its palettes are
+// defined as custom properties so dark mode renders the dark scale, which is
+// what github.com itself shows and which avoids near-white cells on a dark
+// surface. An unrecognised hex is passed through untouched.
+const GITHUB_SCALE: Record<string, string> = {
+    "#ebedf0": "var(--heat-0)",
+    "#9be9a8": "var(--heat-1)",
+    "#40c463": "var(--heat-2)",
+    "#30a14e": "var(--heat-3)",
+    "#216e39": "var(--heat-4)",
+};
+
+const LEGEND = [
+    "var(--heat-0)",
+    "var(--heat-1)",
+    "var(--heat-2)",
+    "var(--heat-3)",
+    "var(--heat-4)",
+];
+
+function cellColor(color: string) {
+    return GITHUB_SCALE[color.toLowerCase()] ?? color;
+}
 
 
 export function ActivityHeatmap() {
@@ -148,13 +169,15 @@ export function ActivityHeatmap() {
                                         } on ${day.date}`}
                                         className="size-[10px] rounded-[2px] transition-transform hover:scale-125 focus-visible:scale-125 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                                         style={{
-                                            backgroundColor: day.color,
+                                            backgroundColor: cellColor(
+                                                day.color,
+                                            ),
                                         }}
                                     />
                                 ))}
                             </div>
 
-                            <div className="mt-3 flex items-center justify-between text-[11px] text-muted-foreground">
+                            <div className="mt-3 flex flex-col gap-2 text-[11px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
                                 <a
                                     href="https://docs.github.com/en/get-started/explaining-projects-to-others/why-github-is-the-best-for-open-source/learning-how-we-count-contributions"
                                     target="_blank"
@@ -164,7 +187,7 @@ export function ActivityHeatmap() {
                                     Learn how we count contributions
                                 </a>
 
-                                <span className="flex items-center gap-1.5">
+                                <span className="flex shrink-0 items-center gap-1.5">
                                     Less
                                     {LEGEND.map((color) => (
                                         <span

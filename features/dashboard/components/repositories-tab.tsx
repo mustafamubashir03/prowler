@@ -309,19 +309,20 @@ export function RepositoriesTab() {
                     </div>
                 </div>
             ) : (
-                <table className="w-full border-collapse text-sm">
+                <div className="overflow-x-auto">
+                <table className="w-full min-w-[440px] border-collapse text-sm">
                     <thead>
                         <tr className="border-b border-border">
-                            <th className="px-5 py-2.5 text-left font-mono text-[11px] font-normal uppercase tracking-[0.12em] text-muted-foreground">
+                            <th className="px-3 py-2.5 sm:px-5 text-left font-mono text-[11px] font-normal uppercase tracking-[0.12em] text-muted-foreground">
                                 Repository
                             </th>
-                            <th className="hidden px-5 py-2.5 text-left font-mono text-[11px] font-normal uppercase tracking-[0.12em] text-muted-foreground md:table-cell">
+                            <th className="hidden px-3 py-2.5 sm:px-5 text-left font-mono text-[11px] font-normal uppercase tracking-[0.12em] text-muted-foreground md:table-cell">
                                 Default branch
                             </th>
-                            <th className="px-5 py-2.5 text-left font-mono text-[11px] font-normal uppercase tracking-[0.12em] text-muted-foreground">
+                            <th className="hidden px-3 py-2.5 text-left font-mono text-[11px] font-normal uppercase tracking-[0.12em] text-muted-foreground sm:table-cell sm:px-5">
                                 Visibility
                             </th>
-                            <th className="px-5 py-2.5 text-right font-mono text-[11px] font-normal uppercase tracking-[0.12em] text-muted-foreground">
+                            <th className="px-3 py-2.5 sm:px-5 text-right font-mono text-[11px] font-normal uppercase tracking-[0.12em] text-muted-foreground">
                                 Index status
                             </th>
                         </tr>
@@ -332,15 +333,15 @@ export function RepositoriesTab() {
                                 key={repository.id}
                                 className="border-b border-border transition-colors hover:bg-accent-ink/6"
                             >
-                                <td className="px-5 py-2.5">
+                                <td className="px-3 py-2.5 sm:px-5">
                                     <span className="font-mono">
                                         {repository.fullName}
                                     </span>
                                 </td>
-                                <td className="hidden px-5 py-2.5 font-mono text-xs text-muted-foreground md:table-cell">
+                                <td className="hidden px-3 py-2.5 sm:px-5 font-mono text-xs text-muted-foreground md:table-cell">
                                     {repository.defaultBranch}
                                 </td>
-                                <td className="px-5 py-2.5">
+                                <td className="hidden px-3 py-2.5 sm:table-cell sm:px-5">
                                     <span className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
                                         {repository.private ? (
                                             <Lock className="size-3" aria-hidden />
@@ -350,7 +351,7 @@ export function RepositoriesTab() {
                                         {repository.private ? "private" : "public"}
                                     </span>
                                 </td>
-                                <td className="px-5 py-2.5 text-right whitespace-nowrap">
+                                <td className="px-3 py-2.5 sm:px-5 text-right whitespace-nowrap">
                                     <div className="flex items-center justify-end gap-3">
                                         <IndexBadge
                                             status={repository.indexStatus}
@@ -370,6 +371,7 @@ export function RepositoriesTab() {
                         ))}
                     </tbody>
                 </table>
+                </div>
             )}
 
             <div ref={loadMoreRef} className="h-4" aria-hidden />
