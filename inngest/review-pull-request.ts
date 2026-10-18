@@ -7,6 +7,9 @@ import { index } from "@/lib/pinecone";
 import { db } from "@/src/prisma/db";
 import { inngest } from "./client";
 
+/** How long a REVIEWING row may sit untouched before it counts as abandoned. */
+const STUCK_REVIEW_MS = 30 * 60 * 1000;
+
 export const reviewPullRequest = inngest.createFunction(
     {
         id: "review-pull-request",
@@ -71,6 +74,28 @@ export const reviewPullRequest = inngest.createFunction(
             const repository = await db.orm.public.GitHubRepository.where({
                 githubRepositoryId,
             }).first();
+
+            // A cancelled run (dev-server restart, manual cancel, redeploy) never
+            // reaches onFailure, so its row would sit at REVIEWING forever and the
+            // dashboard would poll it indefinitely. Inngest v4 exposes no cancel
+            // hook, so a new run retires the strays instead. 30 minutes is far
+            // beyond any legitimate in-flight run now that reviews take seconds.
+            if (repository) {
+                await db.orm.public.PullRequestReview.where((fields) =>
+                    fields.repositoryId.eq(repository.id),
+                )
+                    .where((fields) => fields.status.eq("REVIEWING"))
+                    .where((fields) =>
+                        fields.githubPrNumber.neq(prNumber),
+                    )
+                    .where(
+                        (fields) =>
+                            fields.updatedAt.lt(
+                                new Date(Date.now() - STUCK_REVIEW_MS).toISOString(),
+                            ),
+                    )
+                    .updateAll({ status: "FAILED" });
+            }
 
             return db.orm.public.PullRequestReview.upsert({
                 conflictOn: {
