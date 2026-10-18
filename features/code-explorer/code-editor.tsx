@@ -5,14 +5,19 @@ import { useTheme } from "next-themes";
 import { useCallback, useRef } from "react";
 import { type OnMount } from "@monaco-editor/react";
 
+// Bundles Monaco and configures its workers. Must be imported before the editor
+// component so loader.config runs first; see the module for why the default
+// CDN loader is not acceptable here.
+import "@/features/code-explorer/monaco-setup";
+
 /**
  * Monaco touches `window` at import time, so it is pulled in on the client only.
- * A separate module boundary also keeps the ~2MB editor out of the server bundle.
+ * The skeleton keeps the same box so the layout does not jump when it lands.
  */
 const Editor = dynamic(() => import("@monaco-editor/react"), {
     ssr: false,
     loading: () => (
-        <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+        <div className="flex h-full min-h-0 items-center justify-center text-sm text-muted-foreground">
             Loading editor...
         </div>
     ),
