@@ -95,6 +95,10 @@ export const reviewPullRequest = inngest.createFunction(
                     prUrl,
                     status: "REVIEWING",
                     reviewBody: null,
+                    // Re-link on every run: the repository row can appear after
+                    // the first review, and a null repositoryId hides the review
+                    // from the dashboard and from retrieval scoping.
+                    ...(repository ? { repositoryId: repository.id } : {}),
                 },
             });
         });

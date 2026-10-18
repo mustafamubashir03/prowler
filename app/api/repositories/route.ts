@@ -62,7 +62,10 @@ export async function GET(request: Request) {
     // cursor would skip or repeat rows; those page by offset instead. Prisma 8
     // has no .skip(), and the repository set is small, so the slice is done here.
     const cursorSafe = sortKey === "name";
-    const offset = Number(searchParams.get("offset") ?? "0");
+    // A malformed offset must not become NaN: slice(NaN, NaN) silently returns
+    // an empty page and hands the client a NaN cursor that can never recover.
+    const rawOffset = Number(searchParams.get("offset") ?? "0");
+    const offset = Number.isFinite(rawOffset) && rawOffset > 0 ? Math.floor(rawOffset) : 0;
 
     if (cursorSafe && cursor) {
         query = query.where((fields) =>

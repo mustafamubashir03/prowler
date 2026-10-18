@@ -66,24 +66,29 @@ export async function syncInstallation(
             },
         });
 
-        const repositoryIds = repositories.map((repository) =>
-            String(repository.id),
+        // Rows must be updated in place, never deleted and recreated. The row id
+        // is referenced by PullRequestReview (onDelete: SetNull) and scopes the
+        // Pinecone namespace, so recreating it detached every stored review from
+        // its repository, reset index status, and orphaned the vectors on each
+        // sync. Only repositories the installation can no longer reach are
+        // removed.
+        const existing = await tx.orm.public.GitHubRepository.where({
+            installationId: savedInstallation.id,
+        }).all();
+
+        const reachable = new Set(
+            repositories.map((repository) => String(repository.id)),
         );
 
-        await tx.orm.public.GitHubRepository.where({
-            installationId: savedInstallation.id,
-        }).deleteAll();
+        const unreachable = existing
+            .filter((repository) => !reachable.has(repository.githubRepositoryId))
+            .map((repository) => repository.id);
 
-        if (repositoryIds.length > 0) {
-            // A repository that moved between installations keeps its globally
-            // unique id, so clear the old copy too. Batched for the same
-            // parameter limit as the insert below.
-            for (let i = 0; i < repositoryIds.length; i += INSERT_BATCH) {
-                const batch = repositoryIds.slice(i, i + INSERT_BATCH);
-                await tx.orm.public.GitHubRepository
-                    .where((fields) => fields.githubRepositoryId.in(batch))
-                    .deleteAll();
-            }
+        for (let i = 0; i < unreachable.length; i += INSERT_BATCH) {
+            const batch = unreachable.slice(i, i + INSERT_BATCH);
+            await tx.orm.public.GitHubRepository
+                .where((fields) => fields.id.in(batch))
+                .deleteAll();
         }
 
         if (repositories.length === 0) return;
@@ -99,10 +104,44 @@ export async function syncInstallation(
             installationId: savedInstallation.id,
         }));
 
-        for (let i = 0; i < rows.length; i += INSERT_BATCH) {
+        const known = new Set(existing.map((row) => row.githubRepositoryId));
+        const added = rows.filter(
+            (row) => !known.has(row.githubRepositoryId),
+        );
+
+        // A repository that moved between installations keeps its globally
+        // unique id, so clear the copy under the old installation first.
+        // Batched for the same parameter limit as the insert below.
+        for (let i = 0; i < added.length; i += INSERT_BATCH) {
+            const batch = added.slice(i, i + INSERT_BATCH).map((row) => row.githubRepositoryId);
+            await tx.orm.public.GitHubRepository
+                .where((fields) => fields.githubRepositoryId.in(batch))
+                .where((fields) =>
+                    fields.installationId.neq(savedInstallation.id),
+                )
+                .deleteAll();
+        }
+
+        for (let i = 0; i < added.length; i += INSERT_BATCH) {
             await tx.orm.public.GitHubRepository.createAll(
-                rows.slice(i, i + INSERT_BATCH),
+                added.slice(i, i + INSERT_BATCH),
             );
+        }
+
+        // Refresh the metadata GitHub can change without touching indexStatus or
+        // indexedAt, so a rename or a visibility flip does not require re-indexing.
+        for (const row of rows) {
+            await tx.orm.public.GitHubRepository.where({
+                githubRepositoryId: row.githubRepositoryId,
+            }).update({
+                nodeId: row.nodeId,
+                owner: row.owner,
+                name: row.name,
+                fullName: row.fullName,
+                private: row.private,
+                defaultBranch: row.defaultBranch,
+                installationId: row.installationId,
+            });
         }
     });
 }
