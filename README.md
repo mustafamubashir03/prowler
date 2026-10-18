@@ -53,6 +53,48 @@ repository name. Sorting supports name, last updated and index status, ascending
 or descending. Name ordering uses a keyset cursor; the other keys are not unique,
 so those page by offset.
 
+## Webhooks
+
+Events are delivered to `/api/github/webhooks/github` and verified with
+HMAC-SHA256 against `GITHUB_WEBHOOK_SECRET`.
+
+| Event | Handled |
+| --- | --- |
+| `installation` created, unsuspend, new permissions | re-syncs repositories |
+| `installation` deleted | removes the local installation |
+| `installation` suspended | marks the installation suspended |
+| `installation_repositories` | re-syncs repositories |
+| `pull_request` opened, synchronize, reopened | queues a review |
+
+Review events are keyed on repository, PR number and head SHA, so a redelivered
+webhook does not review the same commit twice while a genuine new push still does.
+
+## API surface
+
+All dashboard routes require a session and return `401` without one.
+
+| Route | Purpose |
+| --- | --- |
+| `GET /api/activity` | GitHub contribution calendar, optionally `?year=YYYY` |
+| `GET /api/overview` | Dashboard counts and recent activity |
+| `GET /api/pull-requests` | Stored reviews, newest first |
+| `GET /api/repositories` | Repository list with `search`, `sort` and paging |
+| `POST /api/repositories/[id]/index` | Queues an index run |
+| `POST /api/github/install` | Redirects into the App installation flow |
+| `GET /api/github/callback` | Completes the installation |
+| `POST /api/github/webhooks/github` | Webhook receiver |
+| `GET/POST/PUT /api/inngest` | Inngest serve endpoint |
+
+## Caching
+
+Client data is held in TanStack Query. Default queries go stale after 30
+seconds, so switching tabs does not refetch. Contributions are held for 5 minutes
+because they only change when the user commits, and a selected year keeps its
+previous result on screen while the new one loads. Indexing, disconnecting and
+starting a review are mutations that invalidate the affected keys instead of
+refetching. Polling only runs while work is actually in flight, for example
+while a repository is `INDEXING` or a review is `REVIEWING`.
+
 ## Local development
 
 ```bash

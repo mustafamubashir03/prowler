@@ -62,9 +62,19 @@ function cellColor(color: string) {
 export function ActivityHeatmap() {
     const currentYear = new Date().getFullYear();
 
+    // Contributions only change when the user commits, so this is held far
+    // longer than the default stale time. Switching tabs or years should not
+    // re-hit the GitHub API.
+    const cache = {
+        staleTime: 5 * 60_000,
+        gcTime: 30 * 60_000,
+        refetchOnWindowFocus: false,
+    } as const;
+
     const trailing = useQuery({
         queryKey: ["activity", "trailing"],
         queryFn: () => fetchActivity(),
+        ...cache,
     });
 
     const [selected, setSelected] = useState<number | null>(null);
@@ -73,6 +83,8 @@ export function ActivityHeatmap() {
         queryKey: ["activity", "year", selected],
         queryFn: () => fetchActivity(selected!),
         enabled: selected !== null,
+        placeholderData: (previous) => previous,
+        ...cache,
     });
 
     const data = selected === null ? trailing.data : yearly.data;
@@ -121,14 +133,34 @@ export function ActivityHeatmap() {
             ? `${data?.total ?? 0} contributions in the last year`
             : `${data?.total ?? 0} contributions in ${selected}`;
 
+    // While the first fetch is in flight, draw the grid shape rather than a
+    // bare line of text, so the block does not jump when the data lands.
+    const cells: { key: string; color: string; title?: string }[] = data
+        ? weeks.flat().map((day) => ({
+              key: day.date,
+              color: cellColor(day.color),
+              title: `${day.contributionCount} contribution${
+                  day.contributionCount === 1 ? "" : "s"
+              } on ${day.date}`,
+          }))
+        : Array.from({ length: 371 }, (_, index) => ({
+              key: `pending-${index}`,
+              color: "var(--muted)",
+          }));
+
     return (
         <section className="border-b border-border">
             <div className="flex flex-wrap items-start justify-between gap-4 px-5 py-5">
                 <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-foreground">
-                        {isLoading && !data
-                            ? "Loading contributions..."
-                            : heading}
+                        {isLoading && !data ? (
+                            <span
+                                aria-hidden
+                                className="inline-block h-4 w-52 animate-pulse bg-muted motion-reduce:animate-none"
+                            />
+                        ) : (
+                            heading
+                        )}
                     </p>
 
                     <div className="mt-4 flex gap-3">
@@ -161,20 +193,18 @@ export function ActivityHeatmap() {
                                     gridAutoColumns: "10px",
                                 }}
                             >
-                                {(weeks.length ? weeks.flat() : []).map((day) => (
-                                    <div
-                                        key={day.date}
-                                        title={`${day.contributionCount} contribution${
-                                            day.contributionCount === 1 ? "" : "s"
-                                        } on ${day.date}`}
-                                        className="size-[10px] rounded-[2px] transition-transform hover:scale-125 focus-visible:scale-125 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                        style={{
-                                            backgroundColor: cellColor(
-                                                day.color,
-                                            ),
-                                        }}
-                                    />
-                                ))}
+{cells.map((cell) => (
+                                <div
+                                    key={cell.key}
+                                    title={cell.title}
+                                    className={`size-[10px] rounded-[2px] ${
+                                        cell.title
+                                            ? "transition-transform hover:scale-125 focus-visible:scale-125 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                            : "animate-pulse motion-reduce:animate-none"
+                                    }`}
+                                    style={{ backgroundColor: cell.color }}
+                                />
+                            ))}
                             </div>
 
                             <div className="mt-3 flex flex-col gap-2 text-[11px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
@@ -203,7 +233,7 @@ export function ActivityHeatmap() {
                     </div>
 
                     {data && (
-                        <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                        <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground/70">
                             {data.login} · {data.activeDays} active days ·{" "}
                             {data.longestStreak} longest streak · synced from
                             GitHub

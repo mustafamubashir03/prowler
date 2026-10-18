@@ -133,9 +133,9 @@ function PullRequestCard({
 
       <CollapsibleContent className="border-t border-border px-3 pb-5 pt-4 sm:px-5">
         {hasReview ? (
-          // A measure keeps the prose readable instead of running the full width
-          // of a wide monitor.
-          <div className="max-w-[78ch] border-l border-border pl-4">
+          // Centred so the measure sits inside the card instead of hugging
+          // the left edge and leaving a void on a wide screen.
+          <div className="mx-auto w-full max-w-[80ch] border-l border-border pl-4">
             <ReviewMarkdown
               content={review.reviewBody!}
               isAnimating={isReviewing}
