@@ -18,9 +18,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'ef1a849ead56ac72df2597c3014d8f2d096f02673966c08d08800666cb7abd95'>;
+  StorageHashBase<'1c772b752f3b882283a9ce93e748354b8eb77c1c8f2837f5b632fd76c2aed86f'>;
 export type ExecutionHash =
-  ExecutionHashBase<'472dbbf5aad1636a4db91ae0bfc0c376bd914aa78c247ba5889e5b163b5fa992'>;
+  ExecutionHashBase<'3b90f7295e16076d0c602b3eab8c6fc4ffe1b412beae3301c1923bd99fab3961'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -278,6 +278,23 @@ export type FieldOutputTypes = {
     };
   };
   readonly public: {
+    readonly ChatMessage: {
+      readonly content: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly role: CodecTypes['pg/text@1']['output'];
+      readonly sessionId: CodecTypes['pg/text@1']['output'];
+      readonly tokens: CodecTypes['pg/int4@1']['output'] | null;
+    };
+    readonly ChatSession: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly githubRepositoryId: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly repositoryId: CodecTypes['pg/text@1']['output'] | null;
+      readonly title: CodecTypes['pg/text@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly userId: CodecTypes['pg/text@1']['output'];
+    };
     readonly GitHubInstallation: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly githubInstallationId: CodecTypes['pg/text@1']['output'];
@@ -378,6 +395,23 @@ export type FieldInputTypes = {
     };
   };
   readonly public: {
+    readonly ChatMessage: {
+      readonly content: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly role: CodecTypes['pg/text@1']['input'];
+      readonly sessionId: CodecTypes['pg/text@1']['input'];
+      readonly tokens: CodecTypes['pg/int4@1']['input'] | null;
+    };
+    readonly ChatSession: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly githubRepositoryId: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly repositoryId: CodecTypes['pg/text@1']['input'] | null;
+      readonly title: CodecTypes['pg/text@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly userId: CodecTypes['pg/text@1']['input'];
+    };
     readonly GitHubInstallation: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly githubInstallationId: CodecTypes['pg/text@1']['input'];
@@ -478,6 +512,23 @@ export type StorageColumnTypes = {
     };
   };
   readonly public: {
+    readonly ChatMessage: {
+      readonly content: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly role: CodecTypes['pg/text@1']['output'];
+      readonly sessionId: CodecTypes['pg/text@1']['output'];
+      readonly tokens: CodecTypes['pg/int4@1']['output'] | null;
+    };
+    readonly ChatSession: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly githubRepositoryId: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly repositoryId: CodecTypes['pg/text@1']['output'] | null;
+      readonly title: CodecTypes['pg/text@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly userId: CodecTypes['pg/text@1']['output'];
+    };
     readonly GitHubInstallation: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly githubInstallationId: CodecTypes['pg/text@1']['output'];
@@ -578,6 +629,23 @@ export type StorageColumnInputTypes = {
     };
   };
   readonly public: {
+    readonly ChatMessage: {
+      readonly content: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly role: CodecTypes['pg/text@1']['input'];
+      readonly sessionId: CodecTypes['pg/text@1']['input'];
+      readonly tokens: CodecTypes['pg/int4@1']['input'] | null;
+    };
+    readonly ChatSession: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly githubRepositoryId: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly repositoryId: CodecTypes['pg/text@1']['input'] | null;
+      readonly title: CodecTypes['pg/text@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly userId: CodecTypes['pg/text@1']['input'];
+    };
     readonly GitHubInstallation: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly githubInstallationId: CodecTypes['pg/text@1']['input'];
@@ -685,6 +753,28 @@ export namespace Models {
     value: CodecTypes['pg/text@1']['output'];
     readonly [RelationKeys]?: never;
   };
+  export type public_ChatMessage = {
+    content: CodecTypes['pg/text@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    role: CodecTypes['pg/text@1']['output'];
+    sessionId: CodecTypes['pg/text@1']['output'];
+    tokens: CodecTypes['pg/int4@1']['output'] | null;
+    session: public_ChatSession;
+    readonly [RelationKeys]?: 'session';
+  };
+  export type public_ChatSession = {
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    githubRepositoryId: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    repositoryId: CodecTypes['pg/text@1']['output'] | null;
+    title: CodecTypes['pg/text@1']['output'];
+    updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    userId: CodecTypes['pg/text@1']['output'];
+    messages: public_ChatMessage[];
+    repository: public_GitHubRepository | null;
+    readonly [RelationKeys]?: 'messages' | 'repository';
+  };
   export type public_GitHubInstallation = {
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
     githubInstallationId: CodecTypes['pg/text@1']['output'];
@@ -715,9 +805,10 @@ export namespace Models {
     owner: CodecTypes['pg/text@1']['output'];
     private: CodecTypes['pg/bool@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    chatSessions: public_ChatSession[];
     installation: public_GitHubInstallation;
     pullRequestReviews: public_PullRequestReview[];
-    readonly [RelationKeys]?: 'installation' | 'pullRequestReviews';
+    readonly [RelationKeys]?: 'chatSessions' | 'installation' | 'pullRequestReviews';
   };
   export type public_PullRequestReview = {
     author: CodecTypes['pg/text@1']['output'];
@@ -756,6 +847,8 @@ export declare const models: {
     AuthVerification: Models.auth_AuthVerification;
   };
   public: {
+    ChatMessage: Models.public_ChatMessage;
+    ChatSession: Models.public_ChatSession;
     GitHubInstallation: Models.public_GitHubInstallation;
     GitHubRepository: Models.public_GitHubRepository;
     PullRequestReview: Models.public_PullRequestReview;
@@ -1075,6 +1168,164 @@ type ContractBase = Omit<
         readonly kind: 'postgres-schema';
         readonly entries: {
           readonly table: {
+            readonly ChatMessage: {
+              columns: {
+                readonly content: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly role: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly sessionId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly tokens: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'ChatMessage_sessionId_createdAt_idx_9c04f880';
+                  readonly prefix: 'ChatMessage_sessionId_createdAt_idx';
+                  readonly columns: readonly ['sessionId', 'createdAt'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'ChatMessage_sessionId_idx_29f415d4';
+                  readonly prefix: 'ChatMessage_sessionId_idx';
+                  readonly columns: readonly ['sessionId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'ChatMessage';
+                    readonly columns: readonly ['sessionId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'ChatSession';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly ChatSession: {
+              columns: {
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly githubRepositoryId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly repositoryId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly title: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'New chat'>;
+                  };
+                  readonly many: false;
+                };
+                readonly updatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly userId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'ChatSession_githubRepositoryId_idx_d3526253';
+                  readonly prefix: 'ChatSession_githubRepositoryId_idx';
+                  readonly columns: readonly ['githubRepositoryId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'ChatSession_repositoryId_idx_dce7a8ba';
+                  readonly prefix: 'ChatSession_repositoryId_idx';
+                  readonly columns: readonly ['repositoryId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'ChatSession_userId_updatedAt_idx_42f5280d';
+                  readonly prefix: 'ChatSession_userId_updatedAt_idx';
+                  readonly columns: readonly ['userId', 'updatedAt'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'ChatSession';
+                    readonly columns: readonly ['repositoryId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'GitHubRepository';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
             readonly GitHubInstallation: {
               columns: {
                 readonly createdAt: {
@@ -1464,6 +1715,14 @@ type ContractBase = Omit<
   readonly target: 'postgres';
   readonly targetFamily: 'sql';
   readonly roots: {
+    readonly ChatMessage: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'ChatMessage';
+    };
+    readonly ChatSession: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'ChatSession';
+    };
     readonly GitHubInstallation: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'GitHubInstallation';
@@ -1803,6 +2062,139 @@ type ContractBase = Omit<
       };
       readonly public: {
         readonly models: {
+          readonly ChatMessage: {
+            readonly fields: {
+              readonly content: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly role: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly sessionId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly tokens: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly session: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ChatSession';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['sessionId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'ChatMessage';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly content: { readonly column: 'content' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly id: { readonly column: 'id' };
+                readonly role: { readonly column: 'role' };
+                readonly sessionId: { readonly column: 'sessionId' };
+                readonly tokens: { readonly column: 'tokens' };
+              };
+            };
+          };
+          readonly ChatSession: {
+            readonly fields: {
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly githubRepositoryId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly repositoryId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly title: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly userId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly messages: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ChatMessage';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['sessionId'];
+                };
+              };
+              readonly repository: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'GitHubRepository';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['repositoryId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'ChatSession';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly githubRepositoryId: { readonly column: 'githubRepositoryId' };
+                readonly id: { readonly column: 'id' };
+                readonly repositoryId: { readonly column: 'repositoryId' };
+                readonly title: { readonly column: 'title' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly userId: { readonly column: 'userId' };
+              };
+            };
+          };
           readonly GitHubInstallation: {
             readonly fields: {
               readonly createdAt: {
@@ -1963,6 +2355,17 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly chatSessions: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ChatSession';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['repositoryId'];
+                };
+              };
               readonly installation: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -2191,6 +2594,31 @@ type ContractBase = Omit<
     readonly executionHash: ExecutionHash;
     readonly mutations: {
       readonly defaults: readonly [
+        {
+          readonly onCreate: { readonly id: 'cuid2'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'ChatMessage';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'cuid2'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'ChatSession';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
+          readonly onUpdate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'ChatSession';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
         {
           readonly onCreate: { readonly id: 'cuid2'; readonly kind: 'generator' };
           readonly ref: {

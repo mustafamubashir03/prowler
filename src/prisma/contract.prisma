@@ -43,6 +43,7 @@ model GitHubRepository {
   installationId     String
   installation       GitHubInstallation  @relation(fields: [installationId], references: [id], onDelete: Cascade)
   pullRequestReviews PullRequestReview[]
+  chatSessions       ChatSession[]
   createdAt          TimestamptzString   @default(now())
   updatedAt          temporal.updatedAtString()
 
@@ -68,6 +69,37 @@ model PullRequestReview {
 
   @@unique([githubRepositoryId, githubPrNumber])
   @@index([repositoryId])
+}
+
+/// A conversation with the assistant grounded in one repository.
+model ChatSession {
+  id                 String            @id @default(cuid(2))
+  title              String            @default("New chat")
+  githubRepositoryId String
+  repositoryId       String?
+  repository         GitHubRepository? @relation(fields: [repositoryId], references: [id], onDelete: SetNull)
+  userId             String
+  createdAt          TimestamptzString  @default(now())
+  updatedAt          temporal.updatedAtString()
+  messages           ChatMessage[]
+
+  @@index([userId, updatedAt])
+  @@index([githubRepositoryId])
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid(2))
+  sessionId String
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      String
+  /// Message text. Assistant turns may include markdown citations like path:line.
+  content   String
+  /// Prompt or completion tokens, when the provider reported them. Null for
+  /// turns that were not billed to a model.
+  tokens    Int?
+  createdAt TimestamptzString @default(now())
+
+  @@index([sessionId, createdAt])
 }
 
 // Better Auth core schema. Better Auth has no Prisma ORM 8 adapter (Prisma 8 has
