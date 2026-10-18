@@ -136,10 +136,11 @@ const patch =
         });
 
         const codebaseContext = await step.run("fetch-code-context", async () => {
-            // Without a linked repository row there is nothing to scope the
-            // search to. Filtering on a null repositoryId would either error or
-            // silently match nothing, so degrade to a diff-only review instead.
-            if (!reviewRecord.repositoryId) return "";
+            // Scoped by GitHub's numeric repository id, which is the same key the
+            // chunks are written under. The webhook always supplies it, so this
+            // works even when the local repository row is missing, and it keeps
+            // working after an App reinstall regenerates that row.
+            if (!githubRepositoryId) return "";
 
             const [embedding] = (await embedTexts([pr.diff.slice(0, 6000)]))
                 .data;
@@ -148,9 +149,7 @@ const patch =
                 vector: embedding.embedding,
                 topK: 8,
                 includeMetadata: true,
-                filter: {
-                    repositoryId: reviewRecord.repositoryId,
-                },
+                filter: { githubRepositoryId },
             });
 
             return results.matches

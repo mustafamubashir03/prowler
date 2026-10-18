@@ -174,6 +174,12 @@ export const indexRepository = inngest.createFunction(
 
         const batchSize = 20;
 
+        // Chunk ids are {githubRepositoryId}:{path}:{chunkIndex}. Keying on GitHub's
+        // own numeric id rather than the local row id keeps the namespace stable
+        // across an App reinstall, a rename or a transfer, so none of those
+        // force a full re-index, and the same tree re-indexes over itself.
+        const githubRepositoryId = repo.repository.githubRepositoryId;
+
         // Phase 1: fetch and chunk every file, writing nothing. The batch loop
         // stays, because Inngest replays step-by-step and re-reading every file
         // on each retry would be unbounded work.
@@ -215,9 +221,8 @@ export const indexRepository = inngest.createFunction(
         }
 
         // Phase 2: everything is read, so the write phase cannot be interrupted
-        // by GitHub. Chunk ids stay {repositoryId}:{path}:{chunkIndex}, which is
-        // what makes a re-index idempotent: the same tree produces the same ids
-        // and upserts over itself.
+        // by GitHub. The same tree produces the same ids, so a re-index upserts
+        // over itself.
         const records: {
             id: string;
             values: number[];
@@ -239,10 +244,13 @@ export const indexRepository = inngest.createFunction(
                 const embeddings = await embedTexts(allChunks.map((chunk) => chunk.chunk));
 
                 return allChunks.map((item, position) => ({
-                    id: `${repositoryId}:${item.path}:${item.chunkIndex}`,
+                    id: `${githubRepositoryId}:${item.path}:${item.chunkIndex}`,
                     values: embeddings.data[position].embedding,
                     metadata: {
                         repositoryId,
+                        // Retrieval filters on this, so it must be the id the
+                        // namespace is keyed on rather than the local row id.
+                        githubRepositoryId,
                         fullName: repo.repository.fullName,
                         path: item.path,
                         chunkIndex: item.chunkIndex,
@@ -269,7 +277,7 @@ export const indexRepository = inngest.createFunction(
         // of files that shrank. Everything else is left exactly as it was.
         const pruned = await step.run("prune-stale-chunks", async () => {
             const keep = new Set(records.map((record) => record.id));
-            const existing = await listVectorIds(repositoryVectorPrefix(repositoryId));
+            const existing = await listVectorIds(repositoryVectorPrefix(githubRepositoryId));
             const stale = existing.filter((id) => !keep.has(id));
 
             if (stale.length > 0) {

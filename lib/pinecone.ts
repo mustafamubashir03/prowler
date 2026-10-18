@@ -3,8 +3,8 @@ import { Pinecone } from '@pinecone-database/pinecone';
 /** Pinecone rejects an over-long id list in a single delete call. */
 const DELETE_BATCH = 1000;
 
-/** Server-side default page size for list-by-id is 100; ask for a bigger one. */
-const LIST_PAGE = 1000;
+/** Pinecone caps a list page at 100 ids and rejects anything higher with a 400. */
+const LIST_PAGE = 100;
 
 // Built lazily: the webhook path now reaches this module, and a module-level
 // `new Pinecone(...)` would make every installation sync fail on import when the
@@ -24,12 +24,21 @@ export function index() {
 }
 
 /**
- * Chunk ids are `{repositoryId}:{path}:{chunkIndex}`, so every vector belonging
- * to one repository shares this prefix. Listing by it is exact: it cannot touch
- * a neighbouring repository whose id is a string prefix of this one.
+ * Chunk ids are `{githubRepositoryId}:{path}:{chunkIndex}`.
+ *
+ * The namespace is keyed on GitHub's own numeric repository id rather than
+ * GitHubRepository.id, which is a locally generated cuid. That cuid is recreated
+ * whenever the App is reinstalled or the repository moves to another
+ * installation, which silently orphaned every vector: the new row pointed at an
+ * empty prefix while the old vectors stayed behind, unreachable because
+ * retrieval always filters on the current repository. GitHub's id survives
+ * renames, transfers and reinstalls, so the index does too.
+ *
+ * Listing by prefix is exact: it cannot touch a neighbouring repository whose
+ * id is a string prefix of this one.
  */
-export function repositoryVectorPrefix(repositoryId: string) {
-    return `${repositoryId}:`;
+export function repositoryVectorPrefix(githubRepositoryId: string) {
+    return `${githubRepositoryId}:`;
 }
 
 /** Every id currently stored under a prefix. */
@@ -59,10 +68,10 @@ export async function deleteVectorsById(ids: readonly string[]) {
 
 /**
  * Drop every vector for a repository. Used when the installation loses access
- * to the repo, where the row (and its id-keyed namespace) is about to go too.
+ * to the repo, keyed on the same GitHub id the chunks were written under.
  */
-export async function deleteRepositoryVectors(repositoryId: string) {
-    const stale = await listVectorIds(repositoryVectorPrefix(repositoryId));
+export async function deleteRepositoryVectors(githubRepositoryId: string) {
+    const stale = await listVectorIds(repositoryVectorPrefix(githubRepositoryId));
 
     if (stale.length > 0) {
         await deleteVectorsById(stale);

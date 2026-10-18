@@ -43,7 +43,7 @@ export async function syncInstallation(
         slug?: string;
     };
 
-    const removedRepositoryIds = await db.transaction(async (tx) => {
+    const removedRepositories = await db.transaction(async (tx) => {
         const savedInstallation = await tx.orm.public.GitHubInstallation.upsert({
             conflictOn: {
                 githubInstallationId: String(githubInstallationId),
@@ -111,10 +111,13 @@ export async function syncInstallation(
 
         const removed = current
             .filter((repository) => !reachable.has(repository.githubRepositoryId))
-            .map((repository) => repository.id);
+            .map((repository) => ({
+                id: repository.id,
+                githubRepositoryId: repository.githubRepositoryId,
+            }));
 
         for (let i = 0; i < removed.length; i += INSERT_BATCH) {
-            const batch = removed.slice(i, i + INSERT_BATCH);
+            const batch = removed.slice(i, i + INSERT_BATCH).map((row) => row.id);
             await tx.orm.public.GitHubRepository
                 .where((fields) => fields.id.in(batch))
                 .deleteAll();
@@ -127,14 +130,15 @@ export async function syncInstallation(
     // vectors are inert orphans if this fails and are retried by the next sync;
     // holding the transaction open across a network call would instead pin the
     // installation's locks for the duration.
-    for (const repositoryId of removedRepositoryIds) {
+    for (const removed of removedRepositories) {
         try {
-            await deleteRepositoryVectors(repositoryId);
+            await deleteRepositoryVectors(removed.githubRepositoryId);
         } catch (error) {
             // Losing the row is the authoritative outcome; the leftover vectors
-            // are unreachable because retrieval always filters by repositoryId.
+            // are unreachable because retrieval always filters by
+            // githubRepositoryId.
             console.error(
-                `[github] dropped repository ${repositoryId} but could not delete its vectors`,
+                `[github] dropped repository ${removed.githubRepositoryId} but could not delete its vectors`,
                 error instanceof Error ? error.name : typeof error,
             );
         }
