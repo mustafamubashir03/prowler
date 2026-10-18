@@ -22,8 +22,16 @@ async function fetchActivity(year?: number) {
         `/api/activity${year ? `?year=${year}` : ""}`,
     );
 
+if (response.status === 401) {
+        // The stored GitHub grant can no longer be refreshed. Retrying cannot
+        // help, and a generic "could not read" hides that, so name the fix.
+        throw new Error(
+            "Your GitHub connection has expired. Sign out and sign in with GitHub to reconnect.",
+        );
+    }
+
     if (!response.ok) {
-        throw new Error("Could not read GitHub contributions");
+        throw new Error("Could not read contributions from GitHub");
     }
 
     return response.json() as Promise<Activity>;
@@ -90,6 +98,7 @@ export function ActivityHeatmap() {
     const data = selected === null ? trailing.data : yearly.data;
     const isLoading = selected === null ? trailing.isLoading : yearly.isLoading;
     const isError = selected === null ? trailing.isError : yearly.isError;
+    const error = selected === null ? trailing.error : yearly.error;
 
     const years = [
         currentYear,
@@ -103,7 +112,9 @@ export function ActivityHeatmap() {
         return (
             <div className="border-b border-border px-5 py-6">
                 <p className="text-sm text-destructive">
-                    Could not read contributions from GitHub.
+                    {error instanceof Error
+                        ? error.message
+                        : "Could not read contributions from GitHub."}
                 </p>
             </div>
         );
