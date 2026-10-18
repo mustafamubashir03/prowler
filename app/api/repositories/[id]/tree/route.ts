@@ -1,33 +1,21 @@
-import { assertUserCanAccessRepository } from "@/lib/github/tenancy";
+import { requireRepositoryAccess } from "@/lib/github/guard";
 import {
     installationIdForRepository,
     resolveHeadSha,
 } from "@/lib/github/repo-read";
 import { getInstallationOctokit } from "@/features/auth/github/lib/github-app";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 import { type Octokit } from "@octokit/rest";
 
 export async function GET(
     _request: Request,
     { params }: { params: Promise<{ id: string }> },
 ) {
-    const session = await auth.api.getSession({ headers: await headers() });
+    // One guard for every repository route: 401 signed out, 404 not yours.
+    const access = await requireRepositoryAccess((await params).id);
 
-    if (!session) {
-        return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    if ("response" in access) return access.response;
 
-    // `id` is GitHub's numeric repository id, which is what the dashboard links
-    // carry and what survives a rename.
-    const repository = await assertUserCanAccessRepository(
-        session.user.id,
-        (await params).id,
-    );
-
-    if (!repository) {
-        return Response.json({ error: "Not found" }, { status: 404 });
-    }
+    const repository = access.repository;
 
     const installationId = await installationIdForRepository(
         repository.installationId,

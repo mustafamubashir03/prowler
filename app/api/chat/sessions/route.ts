@@ -1,33 +1,18 @@
-import { assertUserCanAccessRepository } from "@/lib/github/tenancy";
-import { auth } from "@/lib/auth";
+import { requireRepositoryAccess } from "@/lib/github/guard";
 import { db } from "@/src/prisma/db";
-import { headers } from "next/headers";
 
 export async function GET(request: Request) {
-    const session = await auth.api.getSession({ headers: await headers() });
-
-    if (!session) {
-        return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const id = new URL(request.url).searchParams.get("githubRepositoryId");
 
-    if (!id) {
-        return Response.json(
-            { error: "githubRepositoryId is required" },
-            { status: 400 },
-        );
-    }
+    const access = await requireRepositoryAccess(id);
 
-    const repository = await assertUserCanAccessRepository(session.user.id, id);
+    if ("response" in access) return access.response;
 
-    if (!repository) {
-        return Response.json({ error: "Not found" }, { status: 404 });
-    }
+    const { userId, repository } = access;
 
     const sessions = await db.orm.public.ChatSession.where({
-        userId: session.user.id,
-        githubRepositoryId: id,
+        userId,
+        githubRepositoryId: repository.githubRepositoryId,
     })
         .orderBy((fields) => fields.updatedAt.desc())
         .limit(50)

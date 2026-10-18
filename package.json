@@ -12,7 +12,9 @@
     "db:update": "prisma db update",
     "auth:migrate": "node --experimental-strip-types --no-warnings scripts/db-auth-migrate.mjs",
     "reviews:backfill": "node --experimental-strip-types --no-warnings scripts/backfill-orphan-reviews.mjs",
-    "app:check": "node --experimental-strip-types --no-warnings scripts/check-github-app.mjs"
+    "app:check": "node --experimental-strip-types --no-warnings scripts/check-github-app.mjs",
+    "pinecone:orphans": "node --experimental-strip-types --no-warnings scripts/cleanup-orphan-namespaces.mjs",
+    "test": "vitest run"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.3.302",
@@ -63,7 +65,8 @@
     "prisma": "8.0.0-rc.22",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^5.0.5"
   },
   "packageManager": "pnpm@12.9.1"
 }

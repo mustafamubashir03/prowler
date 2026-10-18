@@ -1,4 +1,4 @@
-import { assertUserCanAccessRepository } from "@/lib/github/tenancy";
+import { requireRepositoryAccess } from "@/lib/github/guard";
 import {
     installationIdForRepository,
     languageFor,
@@ -7,17 +7,9 @@ import {
     resolveHeadSha,
 } from "@/lib/github/repo-read";
 import { getInstallationOctokit } from "@/features/auth/github/lib/github-app";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 import { type Octokit } from "@octokit/rest";
 
 export async function GET(request: Request) {
-    const session = await auth.api.getSession({ headers: await headers() });
-
-    if (!session) {
-        return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
     const path = searchParams.get("path");
@@ -30,11 +22,11 @@ export async function GET(request: Request) {
         );
     }
 
-    const repository = await assertUserCanAccessRepository(session.user.id, id);
+    const access = await requireRepositoryAccess(id);
 
-    if (!repository) {
-        return Response.json({ error: "Not found" }, { status: 404 });
-    }
+    if ("response" in access) return access.response;
+
+    const repository = access.repository;
 
     const installationId = await installationIdForRepository(
         repository.installationId,
