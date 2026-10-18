@@ -3,8 +3,14 @@ import { Pinecone } from '@pinecone-database/pinecone';
 /** Pinecone rejects an over-long id list in a single delete call. */
 const DELETE_BATCH = 1000;
 
-/** Server-side default page size for list-by-id is 100; ask for a bigger one. */
-const LIST_PAGE = 1000;
+/**
+ * Pinecone caps a list page at 100 ids and answers anything larger with
+ * `400 Limit must be greater than 0 and less than or equal to 100`, which made
+ * every prune-stale-chunks step fail. listVectorIds pages with paginationToken
+ * until the index stops returning one, so the cap costs round trips, not
+ * correctness.
+ */
+const LIST_PAGE = 100;
 
 // Built lazily: the webhook path now reaches this module, and a module-level
 // `new Pinecone(...)` would make every installation sync fail on import when the
