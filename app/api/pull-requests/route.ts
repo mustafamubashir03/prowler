@@ -1,8 +1,7 @@
 import { auth } from "@/lib/auth";
+import { clampLimit } from "@/lib/pagination";
 import { db } from "@/src/prisma/db";
 import { headers } from "next/headers";
-
-const PAGE_SIZE = 20;
 
 export async function GET(request: Request) {
     const session = await auth.api.getSession({
@@ -16,6 +15,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
     const cursor = searchParams.get("cursor");
+    const limit = clampLimit(searchParams.get("limit"));
 
     const installations = await db.orm.public.GitHubInstallation.where({
         userId: session.user.id,
@@ -51,11 +51,11 @@ export async function GET(request: Request) {
     const rows = await query
         .orderBy((fields) => fields.updatedAt.desc())
         .orderBy((fields) => fields.id.desc())
-        .limit(PAGE_SIZE + 1)
+        .limit(limit + 1)
         .all();
 
-    const hasMore = rows.length > PAGE_SIZE;
-    const items = hasMore ? rows.slice(0, PAGE_SIZE) : rows;
+    const hasMore = rows.length > limit;
+    const items = hasMore ? rows.slice(0, limit) : rows;
 
     return Response.json({
         reviews: items.map((review) => ({
