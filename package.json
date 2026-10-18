@@ -11,7 +11,8 @@
     "db:init": "prisma db init",
     "db:update": "prisma db update",
     "auth:migrate": "node --experimental-strip-types --no-warnings scripts/db-auth-migrate.mjs",
-    "reviews:backfill": "node --experimental-strip-types --no-warnings scripts/backfill-orphan-reviews.mjs"
+    "reviews:backfill": "node --experimental-strip-types --no-warnings scripts/backfill-orphan-reviews.mjs",
+    "app:check": "node --experimental-strip-types --no-warnings scripts/check-github-app.mjs"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.3.302",
