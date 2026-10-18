@@ -139,9 +139,10 @@ function IndexAction({
 export function RepositoriesTab() {
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
-    const [sortKey, setSortKey] = useState("name");
-    const sortDir = sortKey.endsWith(":desc") ? "desc" : "asc";
-    const sort = `${sortKey}:${sortDir}`;
+    // The select options already carry "key:direction", so the state is that
+    // whole token. Holding a bare key left the select with no matching option
+    // on first paint and built "updated:desc:desc" on the wire.
+    const [sort, setSort] = useState("name:asc");
     const [pendingId, setPendingId] = useState<string | null>(null);
     const [actionError, setActionError] = useState<string | null>(null);
     const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -258,8 +259,8 @@ export function RepositoriesTab() {
                     </label>
                     <select
                         id="repo-sort"
-                        value={sortKey}
-                        onChange={(event) => setSortKey(event.target.value)}
+                        value={sort}
+                        onChange={(event) => setSort(event.target.value)}
                         className="h-8 rounded-none border border-input bg-background px-2 text-xs outline-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/40"
                     >
                         <option value="name:asc">Name A–Z</option>

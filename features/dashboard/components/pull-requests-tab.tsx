@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 import { ArrowDown01Icon, LinkSquare02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
 import { ReviewMarkdown } from "@/components/review-markdown";
+import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
@@ -24,14 +25,20 @@ type PullRequestReview = {
   updatedAt: string;
 };
 
-async function fetchPullRequests() {
-  const response = await fetch("/api/pull-requests");
+async function fetchPullRequests(cursor?: string) {
+  const params = new URLSearchParams();
+  if (cursor) params.set("cursor", cursor);
+
+  const response = await fetch(`/api/pull-requests?${params}`);
 
   if (!response.ok) {
     throw new Error("Failed to load pull requests");
   }
 
-  return response.json() as Promise<{ reviews: PullRequestReview[] }>;
+  return response.json() as Promise<{
+    reviews: PullRequestReview[];
+    nextCursor: string | null;
+  }>;
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -158,20 +165,33 @@ function PullRequestCard({
 }
 
 export function PullRequestsTab() {
-  const { data, isLoading, isError } = useQuery({
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
     queryKey: ["pull-requests"],
-    queryFn: fetchPullRequests,
-    placeholderData: (previous) => previous,
+    queryFn: ({ pageParam }) => fetchPullRequests(pageParam as string | undefined),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    placeholderData: keepPreviousData,
     // Only poll while a review is actually being generated.
     refetchInterval: (query) => {
-      const reviews = (query.state.data?.reviews ?? []) as PullRequestReview[];
+      const reviews =
+        (query.state.data?.pages.flatMap((page) => page.reviews) ?? []) as PullRequestReview[];
+
       return reviews.some((review) => review.status === "REVIEWING")
         ? 3000
         : false;
     },
   });
 
-  const reviews = (data?.reviews ?? []) as PullRequestReview[];
+  const reviews = (data?.pages.flatMap((page) => page.reviews) ??
+    []) as PullRequestReview[];
   const [openIds, setOpenIds] = useState<Record<string, boolean>>({});
 
   function isOpen(review: PullRequestReview, index: number) {
@@ -209,7 +229,9 @@ export function PullRequestsTab() {
         </div>
       ) : isError ? (
         <p className="px-5 py-6 text-sm text-destructive">
-          Could not load reviews.
+          {error instanceof Error
+            ? error.message
+            : "Could not load reviews."}
         </p>
       ) : reviews.length === 0 ? (
         <div className="m-5 border border-dashed border-border bg-card px-6 py-12">
@@ -232,6 +254,19 @@ export function PullRequestsTab() {
               }
             />
           ))}
+
+          {hasNextPage && (
+            <div className="flex justify-center border-b border-border py-4">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isFetchingNextPage}
+                onClick={() => void fetchNextPage()}
+              >
+                {isFetchingNextPage ? "Loading..." : "Load more"}
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>

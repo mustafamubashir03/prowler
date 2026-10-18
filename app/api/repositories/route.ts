@@ -1,8 +1,7 @@
 import { auth } from "@/lib/auth";
+import { clampLimit, clampOffset } from "@/lib/pagination";
 import { db } from "@/src/prisma/db";
 import { headers } from "next/headers";
-
-const PAGE_SIZE = 20;
 
 export async function GET(request: Request) {
   const session = await auth.api.getSession({
@@ -58,11 +57,12 @@ export async function GET(request: Request) {
 
     const direction = rawDir === "desc" ? "desc" : "asc";
     const desc = direction === "desc";
+    const limit = clampLimit(searchParams.get("limit"));
     // Only name ordering is cursor-safe. Other keys are not unique, so a keyset
     // cursor would skip or repeat rows; those page by offset instead. Prisma 8
     // has no .skip(), and the repository set is small, so the slice is done here.
     const cursorSafe = sortKey === "name";
-    const offset = Number(searchParams.get("offset") ?? "0");
+    const offset = clampOffset(searchParams.get("offset"));
 
     if (cursorSafe && cursor) {
         query = query.where((fields) =>
@@ -92,13 +92,13 @@ export async function GET(request: Request) {
     let items;
 
     if (cursorSafe) {
-        rows = await ordered.limit(PAGE_SIZE + 1).all();
-        hasMore = rows.length > PAGE_SIZE;
-        items = hasMore ? rows.slice(0, PAGE_SIZE) : rows;
+        rows = await ordered.limit(limit + 1).all();
+        hasMore = rows.length > limit;
+        items = hasMore ? rows.slice(0, limit) : rows;
     } else {
         const all = await ordered.all();
-        items = all.slice(offset, offset + PAGE_SIZE);
-        hasMore = offset + PAGE_SIZE < all.length;
+        items = all.slice(offset, offset + limit);
+        hasMore = offset + limit < all.length;
     }
 
   return Response.json({
@@ -122,7 +122,7 @@ export async function GET(request: Request) {
       hasMore && cursorSafe
         ? items[items.length - 1]?.fullName ?? null
         : null,
-    nextOffset: hasMore && !cursorSafe ? offset + PAGE_SIZE : null,
+    nextOffset: hasMore && !cursorSafe ? offset + limit : null,
     sort: sortKey,
     direction,
   });

@@ -95,6 +95,10 @@ export const reviewPullRequest = inngest.createFunction(
                     prUrl,
                     status: "REVIEWING",
                     reviewBody: null,
+                    // Re-link on every run: the repository row can appear after
+                    // the first review, and a null repositoryId hides the review
+                    // from the dashboard and from retrieval scoping.
+                    ...(repository ? { repositoryId: repository.id } : {}),
                 },
             });
         });
@@ -121,12 +125,12 @@ export const reviewPullRequest = inngest.createFunction(
             const diff = files
                 .map((file) => {
 const patch =
-                        file.patch?.slice(0, 2000) ??
+                        file.patch?.slice(0, 1500) ??
                         "(no text diff: binary or too large)";
                     return `--- ${file.filename} [${file.status}]\n\n${patch}`;
                 })
                 .join(`\n\n`)
-                .slice(0, 12000);
+                .slice(0, 8000);
 
             return { fileList, diff };
         });
@@ -140,7 +144,7 @@ const patch =
             const [embedding] = (await embedTexts([pr.diff.slice(0, 6000)]))
                 .data;
 
-            const results = await index.query({
+            const results = await index().query({
                 vector: embedding.embedding,
                 topK: 8,
                 includeMetadata: true,

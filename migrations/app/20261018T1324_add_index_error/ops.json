@@ -1,0 +1,44 @@
+[
+  {
+    "id": "column.public.GitHubRepository.indexError",
+    "label": "Add column \"indexError\" to \"GitHubRepository\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "indexError",
+        "table": "GitHubRepository"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"indexError\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "indexError"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"indexError\"",
+        "sql": "ALTER TABLE \"public\".\"GitHubRepository\" ADD COLUMN \"indexError\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"indexError\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "GitHubRepository",
+          "indexError"
+        ]
+      }
+    ]
+  }
+]
