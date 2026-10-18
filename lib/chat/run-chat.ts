@@ -45,6 +45,7 @@ export async function runChat({
     onToolCall,
     onToolResult,
     sessionId,
+    signal,
 }: {
     question: string;
     history: Message[];
@@ -53,6 +54,11 @@ export async function runChat({
     onToolCall: (name: string, input: unknown) => void;
     onToolResult: (name: string, summary: string) => void;
     sessionId?: string;
+    /**
+     * Aborted when the client disconnects. Closing the tab stops the turn at
+     * the next chunk boundary instead of paying for a reply nobody reads.
+     */
+    signal?: AbortSignal;
 }) {
     const apiKey = process.env.OPENROUTER_API_KEY;
 
@@ -80,7 +86,11 @@ export async function runChat({
         { role: "user", content: question },
     ];
 
+    // Tokens counted from the provider's own usage when it reports one.
+    // `tokensEstimated` is false only in that case.
     let totalTokens = 0;
+    let tokensEstimated = true;
+    let lastUsage = 0;
 
     for (let round = 0; round < MAX_TOOL_ROUNDS; round += 1) {
         const response = await fetch(BASE_URL, {
@@ -91,7 +101,12 @@ export async function runChat({
                 "HTTP-Referer": "http://localhost:3000",
                 "X-Title": "prowler-chat",
             },
-            signal: AbortSignal.timeout(120_000),
+            signal: AbortSignal.any([
+                    AbortSignal.timeout(120_000),
+                    // tsconfig targets a lib without AbortSignal.any, and a
+                    // client disconnect has to stop the request either way.
+                    ...(signal ? [signal] : []),
+                ]),
             body: JSON.stringify({
                 model: MODEL,
                 messages,
@@ -99,6 +114,9 @@ export async function runChat({
                 tool_choice: "auto",
                 max_tokens: 2000,
                 stream: true,
+                // Without this OpenRouter never sends a usage frame, so the
+                // daily token limit would silently never trip.
+                stream_options: { include_usage: true },
             }),
         });
 
@@ -161,7 +179,10 @@ export async function runChat({
                 }
 
                 if (chunk.usage) {
-                    totalTokens +=
+                    // The usage frame is cumulative for the whole request and
+                    // arrives once, at the end. Summing across frames would
+                    // double count, so the last one wins.
+                    lastUsage =
                         (chunk.usage.completion_tokens ?? 0) +
                         (chunk.usage.prompt_tokens ?? 0);
                 }
@@ -199,6 +220,11 @@ export async function runChat({
         const calls = toolCalls.filter(Boolean);
 
         if (calls.length === 0) {
+            if (lastUsage > 0) {
+                totalTokens = lastUsage;
+                tokensEstimated = false;
+            }
+
             if (sessionId && assistantText) {
                 await db.orm.public.ChatMessage.create({
                     sessionId,
@@ -208,7 +234,7 @@ export async function runChat({
                 });
             }
 
-            return { tokens: totalTokens };
+            return { tokens: totalTokens, tokensEstimated };
         }
 
         messages.push({

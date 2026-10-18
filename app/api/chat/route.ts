@@ -1,5 +1,4 @@
-import { assertUserCanAccessRepository } from "@/lib/github/tenancy";
-import { requireAuth } from "@/features/auth/session";
+import { requireRepositoryAccess } from "@/lib/github/guard";
 import { toolContextForRepository } from "@/lib/chat/repo-tools";
 import { db } from "@/src/prisma/db";
 
@@ -21,8 +20,6 @@ function startOfToday() {
 export const instant = false;
 
 export async function POST(request: Request) {
-    const session = await requireAuth();
-
     const body = (await request.json().catch(() => null)) as {
         githubRepositoryId?: string;
         message?: string;
@@ -39,14 +36,13 @@ export async function POST(request: Request) {
         );
     }
 
-    const repository = await assertUserCanAccessRepository(
-        session.user.id,
-        githubRepositoryId,
-    );
+    // The tools are bound to whatever this resolves to, so the model can never
+    // name a different repository.
+    const access = await requireRepositoryAccess(githubRepositoryId);
 
-    if (!repository) {
-        return Response.json({ error: "Not found" }, { status: 404 });
-    }
+    if ("response" in access) return access.response;
+
+    const { userId, repository } = access;
 
     // Daily limits are counted per user, across every repository.
     const since = startOfToday();
@@ -55,7 +51,7 @@ export async function POST(request: Request) {
         (fields) => fields.createdAt.gte(since),
     )
         .include("session", (sessions) =>
-            sessions.where((fields) => fields.userId.eq(session.user.id)),
+            sessions.where((fields) => fields.userId.eq(userId)),
         )
         .all();
 
@@ -88,7 +84,7 @@ export async function POST(request: Request) {
             ? await db.orm.public.ChatSession.where({
                   id: body.sessionId,
               })
-                  .where((fields) => fields.userId.eq(session.user.id))
+                  .where((fields) => fields.userId.eq(userId))
                   .first()
             : null;
 
@@ -96,7 +92,7 @@ export async function POST(request: Request) {
         chatSession = await db.orm.public.ChatSession.create({
             githubRepositoryId,
             repositoryId: repository.id,
-            userId: session.user.id,
+            userId,
             title: question.slice(0, 60),
         });
     }
@@ -118,12 +114,17 @@ export async function POST(request: Request) {
 
     const encoder = new TextEncoder();
 
+    // Closing the tab aborts this, which stops the model turn at the next
+    // chunk boundary instead of paying for a reply nobody will read.
+    const clientGone = new AbortController();
+    request.signal.addEventListener("abort", () => clientGone.abort());
+
     const stream = new ReadableStream({
         async start(controller) {
             let closed = false;
 
             const send = (event: string, data: unknown) => {
-                if (closed) return;
+                if (closed || clientGone.signal.aborted) return;
                 controller.enqueue(
                     encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`),
                 );
@@ -131,9 +132,10 @@ export async function POST(request: Request) {
 
             try {
                 const { runChat } = await import("@/lib/chat/run-chat");
-                await runChat({
+                const result = await runChat({
                     question,
                     sessionId: chatSession.id,
+                    signal: clientGone.signal,
                     history: history
                         .reverse()
                         .filter((message) =>
@@ -152,9 +154,17 @@ export async function POST(request: Request) {
                 });
 
                 if (!closed) {
-                    send("done", { sessionId: chatSession!.id });
+                    send("done", {
+                        sessionId: chatSession!.id,
+                        tokens: result.tokens,
+                        tokensEstimated: result.tokensEstimated,
+                    });
                 }
             } catch (error) {
+                // A client disconnect is not a failure worth logging or
+                // reporting: nobody is listening.
+                if (clientGone.signal.aborted) return;
+
                 console.error(
                     "[chat] failed",
                     error instanceof Error ? error.name : typeof error,
