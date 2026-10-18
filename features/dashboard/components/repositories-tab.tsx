@@ -33,10 +33,19 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
     );
 }
 
-async function fetchRepositories(search: string, cursor?: string) {
+async function fetchRepositories(
+    search: string,
+    sort: string,
+    page?: string,
+) {
     const params = new URLSearchParams();
     if (search) params.set("search", search);
-    if (cursor) params.set("cursor", cursor);
+    if (sort) params.set("sort", sort);
+    // A numeric page token is an offset; anything else is a keyset cursor.
+    if (page) {
+        if (/^\d+$/.test(page)) params.set("offset", page);
+        else params.set("cursor", page);
+    }
 
     const response = await fetch(`/api/repositories?${params}`);
 
@@ -47,6 +56,7 @@ async function fetchRepositories(search: string, cursor?: string) {
     return response.json() as Promise<{
         repositories: Repository[];
         nextCursor: string | null;
+        nextOffset: string | null;
     }>;
 }
 
@@ -129,6 +139,9 @@ function IndexAction({
 export function RepositoriesTab() {
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
+    const [sortKey, setSortKey] = useState("name");
+    const sortDir = sortKey.endsWith(":desc") ? "desc" : "asc";
+    const sort = `${sortKey}:${sortDir}`;
     const [pendingId, setPendingId] = useState<string | null>(null);
     const [actionError, setActionError] = useState<string | null>(null);
     const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -148,11 +161,17 @@ export function RepositoriesTab() {
         isError,
         error,
     } = useInfiniteQuery({
-        queryKey: ["repositories", debouncedSearch],
+        queryKey: ["repositories", debouncedSearch, sort],
         queryFn: ({ pageParam }) =>
-            fetchRepositories(debouncedSearch, pageParam as string | undefined),
+            fetchRepositories(
+                debouncedSearch,
+                sort,
+                pageParam as string | undefined,
+            ),
         initialPageParam: undefined as string | undefined,
-        getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+        getNextPageParam: (lastPage) =>
+            lastPage.nextCursor ??
+            (lastPage.nextOffset != null ? String(lastPage.nextOffset) : undefined),
         placeholderData: keepPreviousData,
         // Only poll while a repository is actively indexing. The counts on the
         // overview tab change as runs land, so that cache is dropped too.
@@ -221,7 +240,7 @@ export function RepositoriesTab() {
                 </p>
             </div>
 
-            <div className="flex flex-wrap items-end justify-between gap-4 border-b border-border px-5 py-4">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border px-5 py-4">
                 <Input
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
@@ -230,9 +249,27 @@ export function RepositoriesTab() {
                     className="w-full rounded-none sm:w-72"
                     aria-label="Filter repositories"
                 />
-                <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-                    Index a repository to make it searchable for reviews
-                </p>
+                <div className="flex items-center gap-2">
+                    <label
+                        htmlFor="repo-sort"
+                        className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground"
+                    >
+                        Sort
+                    </label>
+                    <select
+                        id="repo-sort"
+                        value={sortKey}
+                        onChange={(event) => setSortKey(event.target.value)}
+                        className="h-8 rounded-none border border-input bg-background px-2 text-xs outline-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/40"
+                    >
+                        <option value="name:asc">Name A–Z</option>
+                        <option value="name:desc">Name Z–A</option>
+                        <option value="updated:desc">Recently updated</option>
+                        <option value="updated:asc">Least updated</option>
+                        <option value="status:desc">Status Z–A</option>
+                        <option value="status:asc">Status A–Z</option>
+                    </select>
+                </div>
             </div>
 
             {actionError && (
@@ -272,19 +309,20 @@ export function RepositoriesTab() {
                     </div>
                 </div>
             ) : (
-                <table className="w-full border-collapse text-sm">
+                <div className="overflow-x-auto">
+                <table className="w-full min-w-[440px] border-collapse text-sm">
                     <thead>
                         <tr className="border-b border-border">
-                            <th className="px-5 py-2.5 text-left font-mono text-[11px] font-normal uppercase tracking-[0.12em] text-muted-foreground">
+                            <th className="px-3 py-2.5 sm:px-5 text-left font-mono text-[11px] font-normal uppercase tracking-[0.12em] text-muted-foreground">
                                 Repository
                             </th>
-                            <th className="hidden px-5 py-2.5 text-left font-mono text-[11px] font-normal uppercase tracking-[0.12em] text-muted-foreground md:table-cell">
+                            <th className="hidden px-3 py-2.5 sm:px-5 text-left font-mono text-[11px] font-normal uppercase tracking-[0.12em] text-muted-foreground md:table-cell">
                                 Default branch
                             </th>
-                            <th className="px-5 py-2.5 text-left font-mono text-[11px] font-normal uppercase tracking-[0.12em] text-muted-foreground">
+                            <th className="hidden px-3 py-2.5 text-left font-mono text-[11px] font-normal uppercase tracking-[0.12em] text-muted-foreground sm:table-cell sm:px-5">
                                 Visibility
                             </th>
-                            <th className="px-5 py-2.5 text-right font-mono text-[11px] font-normal uppercase tracking-[0.12em] text-muted-foreground">
+                            <th className="px-3 py-2.5 sm:px-5 text-right font-mono text-[11px] font-normal uppercase tracking-[0.12em] text-muted-foreground">
                                 Index status
                             </th>
                         </tr>
@@ -295,15 +333,15 @@ export function RepositoriesTab() {
                                 key={repository.id}
                                 className="border-b border-border transition-colors hover:bg-accent-ink/6"
                             >
-                                <td className="px-5 py-2.5">
+                                <td className="px-3 py-2.5 sm:px-5">
                                     <span className="font-mono">
                                         {repository.fullName}
                                     </span>
                                 </td>
-                                <td className="hidden px-5 py-2.5 font-mono text-xs text-muted-foreground md:table-cell">
+                                <td className="hidden px-3 py-2.5 sm:px-5 font-mono text-xs text-muted-foreground md:table-cell">
                                     {repository.defaultBranch}
                                 </td>
-                                <td className="px-5 py-2.5">
+                                <td className="hidden px-3 py-2.5 sm:table-cell sm:px-5">
                                     <span className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
                                         {repository.private ? (
                                             <Lock className="size-3" aria-hidden />
@@ -313,7 +351,7 @@ export function RepositoriesTab() {
                                         {repository.private ? "private" : "public"}
                                     </span>
                                 </td>
-                                <td className="px-5 py-2.5 text-right whitespace-nowrap">
+                                <td className="px-3 py-2.5 sm:px-5 text-right whitespace-nowrap">
                                     <div className="flex items-center justify-end gap-3">
                                         <IndexBadge
                                             status={repository.indexStatus}
@@ -333,6 +371,7 @@ export function RepositoriesTab() {
                         ))}
                     </tbody>
                 </table>
+                </div>
             )}
 
             <div ref={loadMoreRef} className="h-4" aria-hidden />
