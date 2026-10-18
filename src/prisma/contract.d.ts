@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'d5b313e7dc42697c206f4e5f3ae677dc6c75051b95a2cedd4ad66f2266ad9cce'>;
+  StorageHashBase<'ef1a849ead56ac72df2597c3014d8f2d096f02673966c08d08800666cb7abd95'>;
 export type ExecutionHash =
   ExecutionHashBase<'472dbbf5aad1636a4db91ae0bfc0c376bd914aa78c247ba5889e5b163b5fa992'>;
 export type ProfileHash =
@@ -296,6 +296,7 @@ export type FieldOutputTypes = {
       readonly fullName: CodecTypes['pg/text@1']['output'];
       readonly githubRepositoryId: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
+      readonly indexError: CodecTypes['pg/text@1']['output'] | null;
       readonly indexStatus: CodecTypes['pg/text@1']['output'];
       readonly indexedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
       readonly installationId: CodecTypes['pg/text@1']['output'];
@@ -395,6 +396,7 @@ export type FieldInputTypes = {
       readonly fullName: CodecTypes['pg/text@1']['input'];
       readonly githubRepositoryId: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
+      readonly indexError: CodecTypes['pg/text@1']['input'] | null;
       readonly indexStatus: CodecTypes['pg/text@1']['input'];
       readonly indexedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
       readonly installationId: CodecTypes['pg/text@1']['input'];
@@ -495,6 +497,7 @@ export type StorageColumnTypes = {
       readonly githubRepositoryId: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly indexedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly indexError: CodecTypes['pg/text@1']['output'] | null;
       readonly indexStatus: CodecTypes['pg/text@1']['output'];
       readonly installationId: CodecTypes['pg/text@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
@@ -594,6 +597,7 @@ export type StorageColumnInputTypes = {
       readonly githubRepositoryId: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly indexedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly indexError: CodecTypes['pg/text@1']['input'] | null;
       readonly indexStatus: CodecTypes['pg/text@1']['input'];
       readonly installationId: CodecTypes['pg/text@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
@@ -702,6 +706,7 @@ export namespace Models {
     fullName: CodecTypes['pg/text@1']['output'];
     githubRepositoryId: CodecTypes['pg/text@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
+    indexError: CodecTypes['pg/text@1']['output'] | null;
     indexStatus: CodecTypes['pg/text@1']['output'];
     indexedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
     installationId: CodecTypes['pg/text@1']['output'];
@@ -1194,6 +1199,12 @@ type ContractBase = Omit<
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly indexError: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly indexStatus: {
@@ -1908,6 +1919,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly indexError: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly indexStatus: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -1981,6 +1996,7 @@ type ContractBase = Omit<
                 readonly fullName: { readonly column: 'fullName' };
                 readonly githubRepositoryId: { readonly column: 'githubRepositoryId' };
                 readonly id: { readonly column: 'id' };
+                readonly indexError: { readonly column: 'indexError' };
                 readonly indexStatus: { readonly column: 'indexStatus' };
                 readonly indexedAt: { readonly column: 'indexedAt' };
                 readonly installationId: { readonly column: 'installationId' };

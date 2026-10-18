@@ -37,6 +37,9 @@ model GitHubRepository {
   defaultBranch      String
   indexStatus        String              @default("NOT_INDEXED")
   indexedAt          TimestamptzString?
+  /// Why the last index run failed, so the dashboard can explain a FAILED row
+  /// instead of leaving it blank. Cleared when a run succeeds.
+  indexError         String?
   installationId     String
   installation       GitHubInstallation  @relation(fields: [installationId], references: [id], onDelete: Cascade)
   pullRequestReviews PullRequestReview[]
