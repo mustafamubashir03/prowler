@@ -1,7 +1,8 @@
 import { auth } from "@/lib/auth";
-import { clampLimit } from "@/lib/pagination";
+import { clampLimit, decodeCursor, encodeCursor } from "@/lib/pagination";
 import { db } from "@/src/prisma/db";
 import { headers } from "next/headers";
+import { and, or } from "@prisma/orm-postgres/orm-client";
 
 export async function GET(request: Request) {
     const session = await auth.api.getSession({
@@ -14,8 +15,17 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
-    const cursor = searchParams.get("cursor");
+    const rawCursor = searchParams.get("cursor");
     const limit = clampLimit(searchParams.get("limit"));
+
+// A cursor this server did not produce is a client bug or a stale link.
+// Restarting from the first page instead would look like a duplicate page,
+// so it is rejected outright.
+const decodedCursor = rawCursor ? decodeCursor(rawCursor) : null;
+
+if (rawCursor && (!decodedCursor?.u || !decodedCursor?.i)) {
+    return Response.json({ error: "Invalid cursor" }, { status: 400 });
+}
 
     const installations = await db.orm.public.GitHubInstallation.where({
         userId: session.user.id,
@@ -41,11 +51,19 @@ export async function GET(request: Request) {
         query = query.where((fields) => fields.status.eq(status));
     }
 
-    if (cursor) {
-        // Keyset cursor must match the sort key, otherwise rows get skipped or
-        // repeated across pages. Rows are ordered by updatedAt descending, so
-        // the cursor continues strictly below the last row we returned.
-        query = query.where((fields) => fields.updatedAt.lt(cursor));
+    if (decodedCursor?.u && decodedCursor?.i) {
+        // The keyset has to match the sort exactly. Rows are ordered by
+        // (updatedAt desc, id desc), so "strictly after the last row" is
+        // updatedAt < cursor.updatedAt OR (equal updatedAt AND id < cursor.id).
+        // A cursor on updatedAt alone drops every row sharing that timestamp.
+        const { u, i } = decodedCursor;
+
+        query = query.where((fields) =>
+            or(
+                fields.updatedAt.lt(u),
+                and(fields.updatedAt.eq(u), fields.id.lt(i)),
+            ),
+        );
     }
 
     const rows = await query
@@ -56,6 +74,7 @@ export async function GET(request: Request) {
 
     const hasMore = rows.length > limit;
     const items = hasMore ? rows.slice(0, limit) : rows;
+    const last = items[items.length - 1];
 
     return Response.json({
         reviews: items.map((review) => ({
@@ -73,6 +92,9 @@ export async function GET(request: Request) {
             reviewBody: review.reviewBody,
             updatedAt: review.updatedAt,
         })),
-        nextCursor: hasMore ? items[items.length - 1]?.updatedAt ?? null : null,
+        nextCursor:
+            hasMore && last
+                ? encodeCursor({ u: last.updatedAt, i: last.id })
+                : null,
     });
 }
