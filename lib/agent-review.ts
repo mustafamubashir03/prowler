@@ -3,18 +3,21 @@ import { query } from "@anthropic-ai/claude-agent-sdk";
 // OpenRouter serves these models, so the CLI must be pointed at it through the
 // Anthropic-compatible base URL and auth token. Blanking ANTHROPIC_API_KEY stops
 // the SDK from preferring a real Anthropic key over the routed token, and the
-// DEFAULT_* aliases make every model slot resolve to the routed free model.
-// Benchmarked on this project's own review task (24-file PR, 21,463 char
-// prompt, identical payload per model):
-//   nemotron-3.5-lightning:free        29s   9,522 chars  4/4 contract sections
-//   nemotron-3-ultra-550b-a55b:free     5s     501 chars  0/4, truncated answer
-//   poolside/laguna-s-2.1:free        734s   failed
-// Lightning is the only one that returned a usable review. Ultra is quickest
-// but its output does not follow the contract the dashboard renders.
+// DEFAULT_* aliases make every model slot resolve to the routed model.
 //
-// poolside/laguna-s-2.1:free retires 2026-10-31 with no replacement announced.
-const MODEL =
-    process.env.AGENT_MODEL ?? "nvidia/nemotron-3.5-lightning:free";
+// Benchmarked on this project's own review task, against the four-section
+// contract the dashboard renders, through /v1/messages:
+//   inclusionai/ling-3.0-flash             2.2s   525 chars  4/4 sections
+//   qwen/qwen3.7-flash                    17.4s   759 chars  4/4 sections
+//   deepseek/deepseek-v4.1-flash          13.7s     0 chars  0/4, all reasoning
+//   nvidia/nemotron-3.5-lightning:free   >150s     TIMEOUT, no content
+//
+// The free endpoint was the old default and is a reasoning model: it spent
+// 100% of its token budget on reasoning (256/256 tokens), returned
+// `content: null`, and never produced a review on a real-sized prompt, so every
+// run sat in the step until the abort ceiling. The default below answers a full
+// contract in seconds. Override with AGENT_MODEL.
+const MODEL = process.env.AGENT_MODEL ?? "inclusionai/ling-3.0-flash";
 
 const NEVER_TOOLS = [
     "Agent",
@@ -143,7 +146,7 @@ export async function generatePRReview(input: {
     // Measured: a 24-file PR prompt of ~34k characters took 802s on the routed
 // free model. A 12k diff is faster, and the ceiling leaves real headroom rather
 // than a few seconds either side of the limit.
-const timeout = setTimeout(() => abortController.abort(), 20 * 60 * 1000);
+const timeout = setTimeout(() => abortController.abort(), 5 * 60 * 1000);
 
     try {
         for await (const message of query({
@@ -181,6 +184,14 @@ const timeout = setTimeout(() => abortController.abort(), 20 * 60 * 1000);
             )
 
             if (message.subtype === "success") {
+                // A reasoning model can report success while having spent its
+                // whole budget on reasoning and emitted no content at all. An
+                // empty body would otherwise be stored as a COMPLETED review and
+                // render as a blank card, so treat it as the failure it is.
+                if (!message.result?.trim()) {
+                    return "Review could not be generated: the model returned an empty review";
+                }
+
                 return message.result;
             }
 
