@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
     keepPreviousData,
     useInfiniteQuery,
@@ -15,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 type Repository = {
     id: string;
+    githubRepositoryId: string;
     fullName: string;
     private: boolean;
     defaultBranch: string;
@@ -335,9 +337,12 @@ export function RepositoriesTab() {
                                 className="border-b border-border transition-colors hover:bg-accent-ink/6"
                             >
                                 <td className="px-3 py-2.5 sm:px-5">
-                                    <span className="font-mono">
+                                    <Link
+                                        href={`/dashboard/repos/${repository.githubRepositoryId}/code`}
+                                        className="font-mono underline-offset-2 hover:underline"
+                                    >
                                         {repository.fullName}
-                                    </span>
+                                    </Link>
                                 </td>
                                 <td className="hidden px-3 py-2.5 sm:px-5 font-mono text-xs text-muted-foreground md:table-cell">
                                     {repository.defaultBranch}
