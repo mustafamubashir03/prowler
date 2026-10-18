@@ -1,0 +1,359 @@
+[
+  {
+    "id": "table.ChatMessage",
+    "label": "Create table \"ChatMessage\"",
+    "summary": "Creates table \"ChatMessage\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "ChatMessage"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"ChatMessage\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ChatMessage\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"ChatMessage\"",
+        "sql": "CREATE TABLE \"public\".\"ChatMessage\" (\n  \"content\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"role\" text NOT NULL,\n  \"sessionId\" text NOT NULL,\n  \"tokens\" int4,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"ChatMessage\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ChatMessage\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.ChatSession",
+    "label": "Create table \"ChatSession\"",
+    "summary": "Creates table \"ChatSession\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "ChatSession"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"ChatSession\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ChatSession\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"ChatSession\"",
+        "sql": "CREATE TABLE \"public\".\"ChatSession\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"githubRepositoryId\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"repositoryId\" text,\n  \"title\" text DEFAULT 'New chat' NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"userId\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"ChatSession\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ChatSession\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.ChatMessage.ChatMessage_sessionId_createdAt_idx_9c04f880",
+    "label": "Create index \"ChatMessage_sessionId_createdAt_idx_9c04f880\" on \"ChatMessage\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "ChatMessage_sessionId_createdAt_idx_9c04f880",
+        "table": "ChatMessage"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"ChatMessage_sessionId_createdAt_idx_9c04f880\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ChatMessage_sessionId_createdAt_idx_9c04f880\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"ChatMessage_sessionId_createdAt_idx_9c04f880\"",
+        "sql": "CREATE INDEX \"ChatMessage_sessionId_createdAt_idx_9c04f880\" ON \"public\".\"ChatMessage\" (\"sessionId\", \"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"ChatMessage_sessionId_createdAt_idx_9c04f880\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ChatMessage_sessionId_createdAt_idx_9c04f880\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.ChatMessage.ChatMessage_sessionId_idx_29f415d4",
+    "label": "Create index \"ChatMessage_sessionId_idx_29f415d4\" on \"ChatMessage\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "ChatMessage_sessionId_idx_29f415d4",
+        "table": "ChatMessage"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"ChatMessage_sessionId_idx_29f415d4\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ChatMessage_sessionId_idx_29f415d4\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"ChatMessage_sessionId_idx_29f415d4\"",
+        "sql": "CREATE INDEX \"ChatMessage_sessionId_idx_29f415d4\" ON \"public\".\"ChatMessage\" (\"sessionId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"ChatMessage_sessionId_idx_29f415d4\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ChatMessage_sessionId_idx_29f415d4\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.ChatSession.ChatSession_githubRepositoryId_idx_d3526253",
+    "label": "Create index \"ChatSession_githubRepositoryId_idx_d3526253\" on \"ChatSession\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "ChatSession_githubRepositoryId_idx_d3526253",
+        "table": "ChatSession"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"ChatSession_githubRepositoryId_idx_d3526253\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ChatSession_githubRepositoryId_idx_d3526253\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"ChatSession_githubRepositoryId_idx_d3526253\"",
+        "sql": "CREATE INDEX \"ChatSession_githubRepositoryId_idx_d3526253\" ON \"public\".\"ChatSession\" (\"githubRepositoryId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"ChatSession_githubRepositoryId_idx_d3526253\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ChatSession_githubRepositoryId_idx_d3526253\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.ChatSession.ChatSession_repositoryId_idx_dce7a8ba",
+    "label": "Create index \"ChatSession_repositoryId_idx_dce7a8ba\" on \"ChatSession\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "ChatSession_repositoryId_idx_dce7a8ba",
+        "table": "ChatSession"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"ChatSession_repositoryId_idx_dce7a8ba\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ChatSession_repositoryId_idx_dce7a8ba\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"ChatSession_repositoryId_idx_dce7a8ba\"",
+        "sql": "CREATE INDEX \"ChatSession_repositoryId_idx_dce7a8ba\" ON \"public\".\"ChatSession\" (\"repositoryId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"ChatSession_repositoryId_idx_dce7a8ba\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ChatSession_repositoryId_idx_dce7a8ba\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.ChatSession.ChatSession_userId_updatedAt_idx_42f5280d",
+    "label": "Create index \"ChatSession_userId_updatedAt_idx_42f5280d\" on \"ChatSession\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "ChatSession_userId_updatedAt_idx_42f5280d",
+        "table": "ChatSession"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"ChatSession_userId_updatedAt_idx_42f5280d\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ChatSession_userId_updatedAt_idx_42f5280d\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"ChatSession_userId_updatedAt_idx_42f5280d\"",
+        "sql": "CREATE INDEX \"ChatSession_userId_updatedAt_idx_42f5280d\" ON \"public\".\"ChatSession\" (\"userId\", \"updatedAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"ChatSession_userId_updatedAt_idx_42f5280d\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ChatSession_userId_updatedAt_idx_42f5280d\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.ChatMessage.ChatMessage_sessionId_fkey",
+    "label": "Add foreign key \"ChatMessage_sessionId_fkey\" on \"ChatMessage\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "ChatMessage_sessionId_fkey",
+        "table": "ChatMessage"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"ChatMessage_sessionId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ChatMessage_sessionId_fkey",
+          "public",
+          "\"public\".\"ChatMessage\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"ChatMessage_sessionId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"ChatMessage\"\nADD CONSTRAINT \"ChatMessage_sessionId_fkey\"\nFOREIGN KEY (\"sessionId\")\nREFERENCES \"public\".\"ChatSession\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"ChatMessage_sessionId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ChatMessage_sessionId_fkey",
+          "public",
+          "\"public\".\"ChatMessage\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.ChatSession.ChatSession_repositoryId_fkey",
+    "label": "Add foreign key \"ChatSession_repositoryId_fkey\" on \"ChatSession\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "ChatSession_repositoryId_fkey",
+        "table": "ChatSession"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"ChatSession_repositoryId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ChatSession_repositoryId_fkey",
+          "public",
+          "\"public\".\"ChatSession\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"ChatSession_repositoryId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"ChatSession\"\nADD CONSTRAINT \"ChatSession_repositoryId_fkey\"\nFOREIGN KEY (\"repositoryId\")\nREFERENCES \"public\".\"GitHubRepository\" (\"id\")\nON DELETE SET NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"ChatSession_repositoryId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ChatSession_repositoryId_fkey",
+          "public",
+          "\"public\".\"ChatSession\""
+        ]
+      }
+    ]
+  }
+]
