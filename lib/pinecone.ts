@@ -12,7 +12,7 @@ const DELETE_BATCH = 1000;
  */
 const LIST_PAGE = 100;
 
-// Built lazily: the webhook path now reaches this module, and a module-level
+// Built lazily: the webhook path reaches this module, and a module-level
 // `new Pinecone(...)` would make every installation sync fail on import when the
 // vector store is not configured, instead of only the runs that need it.
 let client: Pinecone | undefined;
@@ -30,58 +30,89 @@ export function index() {
 }
 
 /**
- * Chunk ids are `{githubRepositoryId}:{path}:{chunkIndex}`.
+ * One Pinecone namespace per repository, named by GitHub's numeric repository
+ * id.
  *
- * The namespace is keyed on GitHub's own numeric repository id rather than
- * GitHubRepository.id, which is a locally generated cuid. That cuid is recreated
- * whenever the App is reinstalled or the repository moves to another
- * installation, which silently orphaned every vector: the new row pointed at an
- * empty prefix while the old vectors stayed behind, unreachable because
- * retrieval always filters on the current repository. GitHub's id survives
- * renames, transfers and reinstalls, so the index does too.
+ * Namespacing is what makes removing a repository a single call instead of a
+ * list-then-delete, and it bounds every listing and query to one repository
+ * without relying on a metadata filter the caller could get wrong.
  *
- * Listing by prefix is exact: it cannot touch a neighbouring repository whose
- * id is a string prefix of this one.
+ * The namespace is always resolved here, from the repository row that
+ * assertUserCanAccessRepository already returned. It is never taken from a
+ * query string, a webhook body or a model-supplied argument.
  */
-export function repositoryVectorPrefix(githubRepositoryId: string) {
-    return `${githubRepositoryId}:`;
+export function repoIndex(githubRepositoryId: string) {
+    return index().namespace(String(githubRepositoryId));
 }
 
-/** Every id currently stored under a prefix. */
-export async function listVectorIds(prefix: string): Promise<string[]> {
+/** Every id currently stored in one repository's namespace. */
+export async function listRepoVectorIds(
+    githubRepositoryId: string,
+): Promise<string[]> {
     const ids: string[] = [];
     let paginationToken: string | undefined;
 
     do {
-        const page = await index().listPaginated({
-            prefix,
+        const page = await repoIndex(githubRepositoryId).listPaginated({
             limit: LIST_PAGE,
             ...(paginationToken ? { paginationToken } : {}),
         });
 
-        ids.push(...page.vectors?.map((vector) => vector.id ?? "").filter(Boolean) ?? []);
+        ids.push(...(page.vectors?.map((vector) => vector.id ?? "").filter(Boolean) ?? []));
         paginationToken = page.pagination?.next;
     } while (paginationToken);
 
     return ids;
 }
 
-export async function deleteVectorsById(ids: readonly string[]) {
+export async function deleteRepoVectorsById(
+    githubRepositoryId: string,
+    ids: readonly string[],
+) {
+    const scoped = repoIndex(githubRepositoryId);
+
     for (let i = 0; i < ids.length; i += DELETE_BATCH) {
-        await index().deleteMany({ ids: ids.slice(i, i + DELETE_BATCH) });
+        await scoped.deleteMany({ ids: ids.slice(i, i + DELETE_BATCH) });
     }
 }
 
 /**
- * Drop every vector for a repository. Used when the installation loses access
- * to the repo, keyed on the same GitHub id the chunks were written under.
+ * Drop everything for a repository in one call. Used when the installation
+ * loses access to the repo, which is exactly the case the old list-then-delete
+ * could not complete cleanly.
  */
 export async function deleteRepositoryVectors(githubRepositoryId: string) {
-    const stale = await listVectorIds(repositoryVectorPrefix(githubRepositoryId));
+    const details = await index().describeNamespace(
+        String(githubRepositoryId),
+    );
 
-    if (stale.length > 0) {
-        await deleteVectorsById(stale);
-    }
+    if ((details.recordCount ?? 0) === 0) return 0;
 
-    return stale.length;
+    await index().deleteNamespace(String(githubRepositoryId));
+
+    return details.recordCount ?? 0;
+}
+
+/** Every namespace in the index, excluding Pinecone's own __default__. */
+export async function listRepositoryNamespaces(): Promise<string[]> {
+    const names: string[] = [];
+    let paginationToken: string | undefined;
+
+    do {
+        const page = await index().listNamespaces({
+            limit: LIST_PAGE,
+            ...(paginationToken ? { paginationToken } : {}),
+        });
+
+        for (const entry of page.namespaces ?? []) {
+            const name = entry.name ?? "";
+
+            // __default__ is Pinecone's built-in, never a repository.
+            if (name && !name.startsWith("__")) names.push(name);
+        }
+
+        paginationToken = page.pagination?.next;
+    } while (paginationToken);
+
+    return names;
 }

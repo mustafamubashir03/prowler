@@ -13,7 +13,7 @@
  */
 
 import { getInstallationOctokit } from "@/features/auth/github/lib/github-app";
-import { index } from "@/lib/pinecone";
+import { repoIndex } from "@/lib/pinecone";
 import { embedTexts } from "@/lib/embeddings";
 import { safePath } from "@/lib/chat/safe-path";
 import {
@@ -198,11 +198,13 @@ export function repoTools(context: RepoToolContext): RepoTool[] {
 
             const [embedding] = (await embedTexts([query.slice(0, 4000)])).data;
 
-            const results = await index().query({
+            // The namespace is closed over from the URL-resolved repository, so
+            // the model cannot name a different one and no metadata filter is
+            // needed to keep matches inside this repository.
+            const results = await repoIndex(context.githubRepositoryId).query({
                 vector: embedding.embedding,
                 topK: 8,
                 includeMetadata: true,
-                filter: { githubRepositoryId: context.githubRepositoryId },
             });
 
             if (results.matches.length === 0) {

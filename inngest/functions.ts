@@ -4,10 +4,9 @@ import { getInstallationOctokit } from "@/features/auth/github/lib/github-app";
 import { Octokit } from "@octokit/rest";
 import { embedTexts } from "@/lib/embeddings";
 import {
-    deleteVectorsById,
-    index,
-    listVectorIds,
-    repositoryVectorPrefix,
+    deleteRepoVectorsById,
+    listRepoVectorIds,
+    repoIndex,
 } from "@/lib/pinecone";
 
 const CODE_EXTENSIONS = [
@@ -266,22 +265,23 @@ export const indexRepository = inngest.createFunction(
         // chunks are in would, on a failure, leave the repository with neither.
         await step.run("upsert-chunks", async () => {
             const writeBatch = 100;
+            const scoped = repoIndex(githubRepositoryId);
 
             for (let i = 0; i < records.length; i += writeBatch) {
-                await index().upsert({ records: records.slice(i, i + writeBatch) });
+                await scoped.upsert({ records: records.slice(i, i + writeBatch) });
             }
         });
 
-        // Only ids under this repository's prefix that are absent from the new
+        // Only ids in this repository's namespace that are absent from the new
         // set get deleted: chunks of deleted files, and the high chunk indexes
         // of files that shrank. Everything else is left exactly as it was.
         const pruned = await step.run("prune-stale-chunks", async () => {
             const keep = new Set(records.map((record) => record.id));
-            const existing = await listVectorIds(repositoryVectorPrefix(githubRepositoryId));
-            const stale = existing.filter((id) => !keep.has(id));
+            const existing = await listRepoVectorIds(githubRepositoryId);
+            const stale = existing.filter((id: string) => !keep.has(id));
 
             if (stale.length > 0) {
-                await deleteVectorsById(stale);
+                await deleteRepoVectorsById(githubRepositoryId, stale);
             }
 
             return stale.length;

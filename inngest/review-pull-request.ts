@@ -3,7 +3,7 @@ import { Octokit } from "@octokit/rest";
 import { getInstallationOctokit } from "@/features/auth/github/lib/github-app";
 import { generatePRReview } from "@/lib/agent-review";
 import { embedTexts } from "@/lib/embeddings";
-import { index } from "@/lib/pinecone";
+import { repoIndex } from "@/lib/pinecone";
 import { db } from "@/src/prisma/db";
 import { inngest } from "./client";
 
@@ -161,20 +161,21 @@ const patch =
         });
 
         const codebaseContext = await step.run("fetch-code-context", async () => {
-            // Scoped by GitHub's numeric repository id, which is the same key the
-            // chunks are written under. The webhook always supplies it, so this
-            // works even when the local repository row is missing, and it keeps
-            // working after an App reinstall regenerates that row.
+            // Scoped by GitHub's numeric repository id, which names the Pinecone
+            // namespace the chunks are written under. The webhook always supplies
+            // it, so this works even when the local repository row is missing,
+            // and it keeps working after an App reinstall regenerates that row.
             if (!githubRepositoryId) return "";
 
             const [embedding] = (await embedTexts([pr.diff.slice(0, 6000)]))
                 .data;
 
-            const results = await index().query({
+            // The namespace does the scoping, so there is no metadata filter to
+            // get wrong and no way for a match from another repository to appear.
+            const results = await repoIndex(githubRepositoryId).query({
                 vector: embedding.embedding,
                 topK: 8,
                 includeMetadata: true,
-                filter: { githubRepositoryId },
             });
 
             return results.matches
