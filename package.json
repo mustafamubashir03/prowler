@@ -10,7 +10,8 @@
     "contract:emit": "prisma contract emit",
     "db:init": "prisma db init",
     "db:update": "prisma db update",
-    "auth:migrate": "node --experimental-strip-types --no-warnings scripts/db-auth-migrate.mjs"
+    "auth:migrate": "node --experimental-strip-types --no-warnings scripts/db-auth-migrate.mjs",
+    "reviews:backfill": "node --experimental-strip-types --no-warnings scripts/backfill-orphan-reviews.mjs"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.3.302",

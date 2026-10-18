@@ -133,7 +133,7 @@ export const indexRepository = inngest.createFunction(
         // high chunk indexes of files that shrank, would survive every re-index
         // and skew retrieval. Clearing first keeps the namespace honest.
         await step.run("clear-existing-vectors", async () => {
-            await index.deleteMany({ filter: { repositoryId } });
+            await index().deleteMany({ filter: { repositoryId } });
         });
 
         const files = await step.run("fetch-files", async () => {
@@ -223,7 +223,7 @@ export const indexRepository = inngest.createFunction(
                     },
                 }));
 
-                await index.upsert({ records });
+                await index().upsert({ records });
 
                 return allChunks.length;
             });

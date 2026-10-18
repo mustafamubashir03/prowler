@@ -144,7 +144,7 @@ const patch =
             const [embedding] = (await embedTexts([pr.diff.slice(0, 6000)]))
                 .data;
 
-            const results = await index.query({
+            const results = await index().query({
                 vector: embedding.embedding,
                 topK: 8,
                 includeMetadata: true,
