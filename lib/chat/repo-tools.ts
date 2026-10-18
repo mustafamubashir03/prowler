@@ -15,6 +15,7 @@
 import { getInstallationOctokit } from "@/features/auth/github/lib/github-app";
 import { index } from "@/lib/pinecone";
 import { embedTexts } from "@/lib/embeddings";
+import { safePath } from "@/lib/chat/safe-path";
 import {
     installationIdForRepository,
     languageFor,
@@ -60,25 +61,10 @@ type RepoTool =
       };
 
 /**
- * Reject anything that could walk out of the repository: absolute paths, `..`
- * segments, NUL bytes and empty names all resolve to nothing rather than being
- * cleaned up, because silently rewriting a path would hide a malformed request.
+ * Reject anything that could walk out of the repository. See safe-path for why
+ * these are refused rather than normalised.
  */
-function safePath(path: string) {
-    if (typeof path !== "string") return null;
-    if (path.length === 0 || path.length > 1024) return null;
-    if (path.includes("\0")) return null;
-    if (path.startsWith("/") || path.startsWith("\\")) return null;
-    if (/^[a-zA-Z]:/.test(path)) return null;
-
-    const segments = path.split("/");
-
-    if (segments.some((segment) => segment === ".." || segment === "")) {
-        return null;
-    }
-
-    return segments.join("/");
-}
+export { safePath } from "@/lib/chat/safe-path";
 
 export function repoTools(context: RepoToolContext): RepoTool[] {
     async function octokit() {
