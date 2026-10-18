@@ -1,7 +1,6 @@
 import { createHmac, timingSafeEqual } from "crypto";
 
 import { db } from "@/src/prisma/db";
-import { syncInstallation } from "@/features/auth/github/lib/sync-installation";
 import { inngest } from "@/inngest/client";
 
 function isValidSignature(body: string, signature: string) {
@@ -65,7 +64,15 @@ export async function POST(request: Request) {
             ["created", "unsuspend", "new_permissions_accepted"].includes(payload.action)) ||
         event === "installation_repositories"
     ) {
-        await syncInstallation(githubInstallationId);
+        // Handed to Inngest rather than awaited here: the sync pages every
+        // repository the installation can reach, which outruns the 10 seconds
+        // GitHub waits for a webhook response and made every such delivery
+        // record as a failure even though the sync succeeded.
+        await inngest.send({
+            id: `sync-${githubInstallationId}-${Date.now()}`,
+            name: "installation/sync.requested",
+            data: { githubInstallationId },
+        });
     }
     if (event === "pull_request") {
         const action = payload.action;
